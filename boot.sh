@@ -53,6 +53,13 @@ a=${a:-"dummy.json"}
 s=${s:-"dummy.json"}
 d=${d:-"1"}
 
+function checkIfConsulIsRunningAlready() {
+  if pgrep consul; then
+    special_echo "consul is already running"
+    exit 1
+  fi
+}
+
 function startLeader() {
   local dc="dc$1"
   local data="$dc-l"
@@ -130,6 +137,8 @@ killall() {
   kill -TERM 0
   wait
 }
+
+checkIfConsulIsRunningAlready
 
 for i in $(seq $d); do
   startLeader $i &
