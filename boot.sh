@@ -71,7 +71,7 @@ function startLeader() {
   rm -rf "$data" 
   special_echo "$dc leader HTTP: 127.0.0.1:$http"
   set -o xtrace
-  consul agent -server -bootstrap -data-dir "$data" -bind 127.0.0.1 -node l -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
+  consul agent -ui -server -bootstrap -data-dir "$data" -bind 127.0.0.1 -node l -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
 }
 
 function startServer() {
@@ -86,7 +86,7 @@ function startServer() {
   local dns="-1"
   rm -rf "$data"
   set -o xtrace
-  consul agent -server -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
+  consul agent -ui -server -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
 }
 
 function startClient() {
@@ -99,7 +99,7 @@ function startClient() {
   let "join = 8300 + $1"
   rm -rf "$data" 
   set -o xtrace
-  consul agent -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $a -datacenter $dc
+  consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $a -datacenter $dc
 }
 
 function waitUntilClusterIsUp() {
@@ -123,7 +123,9 @@ function waitUntilClusterIsUp() {
 
 function execWhenClusterReady() {
   if [ -n "${1-}" ]; then
+    set +e
     out=$(./$1)
+    set -e
     special_echo "$out"
   fi
 }
