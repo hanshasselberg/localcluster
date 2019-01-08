@@ -27,6 +27,11 @@ function usage() {
   special_errecho "  -m number of clients (defaults to 5)"
   special_errecho "  -e path to script to execute after the cluster is up, must be executable"
   special_errecho "  -d number of datacenters to spin up and wan-join together"
+  special_errecho ""
+  special_errecho "Examples:"
+  special_errecho '  `./boot.sh` # will boot 1 leader, 2 servers and 5 clients'
+  special_errecho '  `./boot.sh -n 4 -m 20` # will boot 1 leader, 4 servers and 20 clients'
+  special_errecho '  `./boot.sh -n 4 -m 20 -d 3` # will boot 1 leader, 4 servers and 20 clients each in dc1, dc2, and dc3 wan-joined together.'
   exit 1
 }
 
