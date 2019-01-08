@@ -4,7 +4,7 @@ This tool spins up a local consul cluster for you with any number of servers and
 
 ## Usage
 
-```bash
+```
 ./boot.sh -h
 Usage: ./boot.sh [-s <string>] [-a <string>] [-l <trace,debug,info,warn,err>] [-n <int>] [-m <int>] [-e <string>] [-d <int>]
   -s path to config file for servers
