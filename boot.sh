@@ -6,15 +6,31 @@ set -o pipefail
 
 rm -f out.log
 exec 3>&1
+exec 4>&2
+
 function special_echo() {
   echo "$@" >&3
 }
 
+function special_errecho() {
+  echo "$@" >&4
+}
+
 exec &> out.log
 
-usage() { echo "Usage: $0 [-s <string>] [-a <string>] [-l <trace,debug,info,warn,err>] [-n <int>] [-m <int>] [-e <string>]" 1>&2; exit 1; }
+function usage() { 
+  special_errecho "Usage: $0 [-s <string>] [-a <string>] [-l <trace,debug,info,warn,err>] [-n <int>] [-m <int>] [-e <string>] [-d <int>]"
+  special_errecho "  -s path to config file for servers"
+  special_errecho "  -a path to config file for agents"
+  special_errecho "  -l log level (defaults to info)"
+  special_errecho "  -n number of servers (leader is seperate, defaults to 2)"
+  special_errecho "  -m number of clients (defaults to 5)"
+  special_errecho "  -e path to script to execute after the cluster is up, must be executable"
+  special_errecho "  -d number of datacenters to spin up and wan-join together"
+  exit 1
+}
 
-while getopts ":s:a:l:n:m:e:d:" o; do
+while getopts ":s:a:l:n:m:e:d:h" o; do
   case "${o}" in
     s)
       s=${OPTARG}
@@ -37,7 +53,7 @@ while getopts ":s:a:l:n:m:e:d:" o; do
     d)
       d=${OPTARG}
       ;;
-    ?)
+    h)
       usage
       ;;
   esac
@@ -124,7 +140,7 @@ function waitUntilClusterIsUp() {
 function execWhenClusterReady() {
   if [ -n "${1-}" ]; then
     set +e
-    out=$(./$1)
+    out=$($1)
     set -e
     special_echo "$out"
   fi
@@ -134,7 +150,7 @@ trap 'killall' INT
 
 killall() {
   # ignore INT and TERM while shutting down
-  trap '' INT TERM                  
+  trap '' INT TERM
   special_echo "Shutting down..."
   kill -TERM 0
   wait
