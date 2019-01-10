@@ -20,13 +20,15 @@ exec &> out.log
 
 function usage() { 
   special_errecho "Usage: $0 [-s <string>] [-a <string>] [-l <trace,debug,info,warn,err>] [-n <int>] [-m <int>] [-e <string>] [-d <int>]"
-  special_errecho "  -s path to config file for servers"
   special_errecho "  -a path to config file for agents"
-  special_errecho "  -l log level (defaults to info)"
-  special_errecho "  -n number of servers (leader is seperate, defaults to 2)"
-  special_errecho "  -m number of clients (defaults to 5)"
-  special_errecho "  -e path to script to execute after the cluster is up, must be executable"
   special_errecho "  -d number of datacenters to spin up and wan-join together"
+  special_errecho "  -e path to script to execute after the cluster is up, must be executable"
+  special_errecho "  -h show this help"
+  special_errecho "  -l log level (defaults to info)"
+  special_errecho "  -m number of clients (defaults to 5)"
+  special_errecho "  -n number of servers (leader is seperate, defaults to 2)"
+  special_errecho "  -p dc prefix (defaults to dc)"
+  special_errecho "  -s path to config file for servers"
   special_errecho ""
   special_errecho "Examples:"
   special_errecho '  `./boot.sh` # will boot 1 leader, 2 servers and 5 clients'
@@ -35,28 +37,31 @@ function usage() {
   exit 1
 }
 
-while getopts ":s:a:l:n:m:e:d:h" o; do
+while getopts ":s:a:l:n:m:e:d:hp:" o; do
   case "${o}" in
-    s)
-      s=${OPTARG}
-      ;;
     a)
       a=${OPTARG}
       ;;
-    l)
-      l=${OPTARG}
-      ;;
-    n)
-      n=${OPTARG}
-      ;;
-    m)
-      m=${OPTARG}
+    d)
+      d=${OPTARG}
       ;;
     e)
       e=${OPTARG}
       ;;
-    d)
-      d=${OPTARG}
+    l)
+      l=${OPTARG}
+      ;;
+    m)
+      m=${OPTARG}
+      ;;
+    n)
+      n=${OPTARG}
+      ;;
+    p)
+      p=${OPTARG}
+      ;;
+    s)
+      s=${OPTARG}
       ;;
     h)
       usage
@@ -73,6 +78,7 @@ echo "{}">dummy.json
 a=${a:-"dummy.json"}
 s=${s:-"dummy.json"}
 d=${d:-"1"}
+p=${p:-"dc"}
 
 function checkIfConsulIsRunningAlready() {
   if pgrep consul; then
@@ -82,7 +88,7 @@ function checkIfConsulIsRunningAlready() {
 }
 
 function startLeader() {
-  local dc="dc$1"
+  local dc="$p$1"
   local data="$dc-l"
   let "server = 8100 + $1"
   let "serf = 8300 + $1"
@@ -96,7 +102,7 @@ function startLeader() {
 }
 
 function startServer() {
-  local dc="dc$1"
+  local dc="$p$1"
   local id="s$2"
   local data="$dc-$id"
   let "server = 10000 + $100 + $2"
@@ -111,7 +117,7 @@ function startServer() {
 }
 
 function startClient() {
-  local dc="dc$1"
+  local dc="$p$1"
   local id="c$2"
   local data="$dc-$id"
   let "serf = 40000 + $100 + $2"
@@ -127,9 +133,10 @@ function waitUntilClusterIsUp() {
   local up='false'
   let "total = 1 + $1 + $2"
   for i in $(seq $d); do
-    local dc="dc$i"
+    local dc="$p$i"
     while true; do
       set +e
+      set +x
       count=$(curl -s "localhost:8500/v1/agent/members?dc=$dc" | jq '. | length')
       set -e
       if [ "$count" = "$total" ]; then
@@ -163,14 +170,15 @@ killall() {
 
 checkIfConsulIsRunningAlready
 
-for i in $(seq $d); do
+for (( i=1; i<=$d; i++ )); do
   startLeader $i &
 
-  for j in $(seq $n); do
+  for (( j=1; j<=$n; j++ )); do
     startServer $i $j &
   done
 
-  for j in $(seq $m); do
+  for (( j=1; j<=$m; j++ )); do
+    special_echo "start client $i $j"
     startClient $i $j &
   done
 done
