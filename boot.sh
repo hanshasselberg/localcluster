@@ -19,7 +19,7 @@ function special_errecho() {
 exec &> out.log
 
 function usage() { 
-  special_errecho "Usage: $0 [-s <string>] [-a <string>] [-l <trace,debug,info,warn,err>] [-n <int>] [-m <int>] [-e <string>] [-d <int>]"
+  special_errecho "Usage: $0 OPTIONS"
   special_errecho "  -a path to config file for agents"
   special_errecho "  -d number of datacenters to spin up and wan-join together"
   special_errecho "  -e path to script to execute after the cluster is up, must be executable"
@@ -37,7 +37,7 @@ function usage() {
   exit 1
 }
 
-while getopts ":s:a:l:n:m:e:d:hp:" o; do
+while getopts ":a:d:e:hl:m:n:p:s:" o; do
   case "${o}" in
     a)
       a=${OPTARG}
