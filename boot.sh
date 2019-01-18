@@ -178,7 +178,6 @@ for (( i=1; i<=$d; i++ )); do
   done
 
   for (( j=1; j<=$m; j++ )); do
-    special_echo "start client $i $j"
     startClient $i $j &
   done
 done
