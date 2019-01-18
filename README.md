@@ -6,14 +6,16 @@ This tool spins up a local consul cluster for you with any number of servers and
 
 ```
 ./boot.sh -h
-Usage: ./boot.sh [-s <string>] [-a <string>] [-l <trace,debug,info,warn,err>] [-n <int>] [-m <int>] [-e <string>] [-d <int>]
-  -s path to config file for servers
+Usage: ./boot.sh OPTIONS
   -a path to config file for agents
-  -l log level (defaults to info)
-  -n number of servers (leader is seperate, defaults to 2)
-  -m number of clients (defaults to 5)
-  -e path to script to execute after the cluster is up, must be executable
   -d number of datacenters to spin up and wan-join together
+  -e path to script to execute after the cluster is up, must be executable
+  -h show this help
+  -l log level (defaults to info)
+  -m number of clients (defaults to 5)
+  -n number of servers (leader is seperate, defaults to 2)
+  -p dc prefix (defaults to dc)
+  -s path to config file for servers
 
 Examples:
   `./boot.sh` # will boot 1 leader, 2 servers and 5 clients
