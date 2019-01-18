@@ -151,6 +151,7 @@ function waitUntilClusterIsUp() {
 
 function execWhenClusterReady() {
   if [ -n "${1-}" ]; then
+    special_echo "running $1"
     set +e
     out=$($1)
     set -e
