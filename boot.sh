@@ -26,14 +26,14 @@ function usage() {
   special_errecho "  -h show this help"
   special_errecho "  -l log level (defaults to info)"
   special_errecho "  -m number of clients (defaults to 5)"
-  special_errecho "  -n number of servers (leader is seperate, defaults to 2)"
+  special_errecho "  -n number of servers (defaults to 3)"
   special_errecho "  -p dc prefix (defaults to dc)"
   special_errecho "  -s path to config file for servers"
   special_errecho ""
   special_errecho "Examples:"
-  special_errecho '  `./boot.sh` # will boot 1 leader, 2 servers and 5 clients'
-  special_errecho '  `./boot.sh -n 4 -m 20` # will boot 1 leader, 4 servers and 20 clients'
-  special_errecho '  `./boot.sh -n 4 -m 20 -d 3` # will boot 1 leader, 4 servers and 20 clients each in dc1, dc2, and dc3 wan-joined together.'
+  special_errecho '  `./boot.sh` # will boot 3 servers and 5 clients'
+  special_errecho '  `./boot.sh -n 5 -m 20` # will boot 5 servers and 20 clients'
+  special_errecho '  `./boot.sh -n 5 -m 20 -d 3` # will boot 5 servers and 20 clients each in dc1, dc2, and dc3 wan-joined together.'
   exit 1
 }
 
@@ -71,7 +71,7 @@ done
 shift $((OPTIND-1))
 
 l=${l:-"info"}
-n=${n:-"2"}
+n=${n:-"3"}
 m=${m:-"5"}
 e=${e:-""}
 echo "{}">dummy.json
@@ -87,18 +87,19 @@ function checkIfConsulIsRunningAlready() {
   fi
 }
 
-function startLeader() {
+function startWellKnownServer() {
   local dc="$p$1"
-  local data="$dc-l"
+  local id="s$1"
+  local data="$dc-$id"
   let "server = 8100 + $1"
   let "serf = 8300 + $1"
   let "http = 8499 + $1"
   let "wan = 8700 + $1"
   local dns="-1"
-  rm -rf "$data" 
-  special_echo "$dc leader HTTP: 127.0.0.1:$http"
+  rm -rf "$data"
+  special_echo "$dc well known server HTTP: 127.0.0.1:$http"
   set -o xtrace
-  consul agent -ui -server -bootstrap -data-dir "$data" -bind 127.0.0.1 -node l -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
+  consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
 }
 
 function startServer() {
@@ -113,7 +114,7 @@ function startServer() {
   local dns="-1"
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -server -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
+  consul agent -ui -server -bootstrap-expect $n -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
 }
 
 function startClient() {
@@ -124,19 +125,18 @@ function startClient() {
   let "http = 50000 + $100 + $2"
   let "dns = 60000 + $100 + $2"
   let "join = 8300 + $1"
-  rm -rf "$data" 
+  rm -rf "$data"
   set -o xtrace
   consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $a -datacenter $dc
 }
 
 function waitUntilClusterIsUp() {
   local up='false'
-  let "total = 1 + $1 + $2"
+  let "total = $1 + $2"
   for i in $(seq $d); do
     local dc="$p$i"
     while true; do
       set +e
-      set +x
       count=$(curl -s "localhost:8500/v1/agent/members?dc=$dc" | jq '. | length')
       set -e
       if [ "$count" = "$total" ]; then
@@ -172,9 +172,8 @@ killall() {
 checkIfConsulIsRunningAlready
 
 for (( i=1; i<=$d; i++ )); do
-  startLeader $i &
-
-  for (( j=1; j<=$n; j++ )); do
+  startWellKnownServer $i &
+  for (( j=2; j<=$n; j++ )); do
     startServer $i $j &
   done
 
