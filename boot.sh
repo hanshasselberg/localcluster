@@ -21,6 +21,7 @@ exec &> out.log
 function usage() { 
   special_errecho "Usage: $0 OPTIONS"
   special_errecho "  -a path to config file for agents"
+  special_errecho "  -b path to script to execute before we start consul"
   special_errecho "  -d number of datacenters to spin up and wan-join together"
   special_errecho "  -e path to script to execute after the cluster is up, must be executable"
   special_errecho "  -h show this help"
@@ -37,10 +38,13 @@ function usage() {
   exit 1
 }
 
-while getopts ":a:d:e:hl:m:n:p:s:" o; do
+while getopts ":a:b:d:e:hl:m:n:p:s:" o; do
   case "${o}" in
     a)
       a=${OPTARG}
+      ;;
+    b)
+      b=${OPTARG}
       ;;
     d)
       d=${OPTARG}
@@ -87,6 +91,36 @@ function checkIfConsulIsRunningAlready() {
   fi
 }
 
+function joinPort() {
+  let "port = 8300 + $1"
+  echo $port
+}
+
+function serverPort() {
+  let "port = 10000 + $100 - 100 + $2"
+  echo $port
+}
+
+function serfPort() {
+  let "port = 20000 + $100 - 100 + $2"
+  echo $port
+}
+
+function httpPort() {
+  let "port = 30000 + $100 - 100 + $2"
+  echo $port
+}
+
+function wanPort() {
+  let "port = 40000 + $100 - 100 + $2"
+  echo $port
+}
+
+function dnsPort() {
+  let "port = 50000 + $100 - 100 + $2"
+  echo $port
+}
+
 function startWellKnownServer() {
   local dc="$p$1"
   local id="s$1"
@@ -106,12 +140,12 @@ function startServer() {
   local dc="$p$1"
   local id="s$2"
   local data="$dc-$id"
-  let "server = 10000 + $100 + $2"
-  let "serf = 20000 + $100 + $2"
-  let "wan = 25000 + $100 + $2"
-  let "http = 30000 + $100 + $2"
-  let "join = 8300 + $1"
-  local dns="-1"
+  local server=$(serverPort $1 $3)
+  local serf=$(serfPort $1 $3)
+  local wan=$(wanPort $1 $3)
+  local http=$(httpPort $1 $3)
+  local dns=$(dnsPort $1 $3)
+  local join=$(joinPort $1)
   rm -rf "$data"
   set -o xtrace
   consul agent -ui -server -bootstrap-expect $n -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
@@ -121,10 +155,10 @@ function startClient() {
   local dc="$p$1"
   local id="c$2"
   local data="$dc-$id"
-  let "serf = 40000 + $100 + $2"
-  let "http = 50000 + $100 + $2"
-  let "dns = 60000 + $100 + $2"
-  let "join = 8300 + $1"
+  local serf=$(serfPort $1 $3)
+  local http=$(httpPort $1 $3)
+  local dns=$(dnsPort $1 $3)
+  local join=$(joinPort $1)
   rm -rf "$data"
   set -o xtrace
   consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $a -datacenter $dc
@@ -149,6 +183,16 @@ function waitUntilClusterIsUp() {
   special_echo "cluster is up"
 }
 
+function execBefore() {
+  if [ -n "${1-}" ]; then
+    special_echo "running $1"
+    set +e
+    out=$($1)
+    set -e
+    special_echo "$out"
+  fi
+}
+
 function execWhenClusterReady() {
   if [ -n "${1-}" ]; then
     special_echo "running $1"
@@ -171,14 +215,19 @@ killall() {
 
 checkIfConsulIsRunningAlready
 
+execBefore $b
+
+instanceCounter=0
 for (( i=1; i<=$d; i++ )); do
   startWellKnownServer $i &
   for (( j=2; j<=$n; j++ )); do
-    startServer $i $j &
+    startServer $i $j $instanceCounter &
+    ((instanceCounter++))
   done
 
   for (( j=1; j<=$m; j++ )); do
-    startClient $i $j &
+    startClient $i $j $instanceCounter &
+    ((instanceCounter++))
   done
 done
 
