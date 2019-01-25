@@ -75,6 +75,7 @@ done
 shift $((OPTIND-1))
 
 l=${l:-"info"}
+b=${b:-""}
 n=${n:-"3"}
 m=${m:-"5"}
 e=${e:-""}
