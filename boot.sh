@@ -80,10 +80,42 @@ n=${n:-"3"}
 m=${m:-"5"}
 e=${e:-""}
 echo "{}">dummy.json
-a=${a:-"dummy.json"}
-s=${s:-"dummy.json"}
 d=${d:-"1"}
 p=${p:-"dc"}
+
+function clientConfig() {
+  if [ -n "${a-}" ]; then
+    echo $a
+    return
+  fi
+  local dc="$1"
+  if [ -f "./client_$dc.json" ]; then
+    echo "client_$dc.json"
+    return
+  fi
+  if [ -f "./client.json" ]; then
+    echo "client.json"
+    return
+  fi
+  echo "dummy.json"
+}
+
+function serverConfig() {
+  if [ -n "${s-}" ]; then
+    echo $s
+    return
+  fi
+  local dc="$1"
+  if [ -f "./server_$dc.json" ]; then
+    echo "server_$dc.json"
+    return
+  fi
+  if [ -f "./server.json" ]; then
+    echo "server.json"
+    return
+  fi
+  echo "dummy.json"
+}
 
 function checkIfConsulIsRunningAlready() {
   if pgrep consul; then
@@ -124,17 +156,18 @@ function dnsPort() {
 
 function startWellKnownServer() {
   local dc="$p$1"
-  local id="s$1"
+  local id="s1"
   local data="$dc-$id"
   let "server = 8100 + $1"
   let "serf = 8300 + $1"
   let "http = 8499 + $1"
   let "wan = 8700 + $1"
   local dns="-1"
+  local config=$(serverConfig $dc)
   rm -rf "$data"
   special_echo "$dc well known server HTTP: 127.0.0.1:$http"
   set -o xtrace
-  consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
+  consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan localhost:8701
 }
 
 function startServer() {
@@ -147,9 +180,10 @@ function startServer() {
   local http=$(httpPort $1 $3)
   local dns=$(dnsPort $1 $3)
   local join=$(joinPort $1)
+  local config=$(serverConfig $dc)
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -server -bootstrap-expect $n -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $s -datacenter $dc -retry-join-wan localhost:8701
+  consul agent -ui -server -bootstrap-expect $n -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan localhost:8701
 }
 
 function startClient() {
@@ -160,9 +194,10 @@ function startClient() {
   local http=$(httpPort $1 $3)
   local dns=$(dnsPort $1 $3)
   local join=$(joinPort $1)
+  local config=$(clientConfig $dc)
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $a -datacenter $dc
+  consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $config -datacenter $dc
 }
 
 function waitUntilClusterIsUp() {
