@@ -22,6 +22,7 @@ function usage() {
   special_errecho "Usage: $0 OPTIONS"
   special_errecho "  -a path to config file for agents"
   special_errecho "  -b path to script to execute before we start consul"
+  special_errecho "  -c domain"
   special_errecho "  -d number of datacenters to spin up and wan-join together"
   special_errecho "  -e path to script to execute after the cluster is up, must be executable"
   special_errecho "  -h show this help"
@@ -38,13 +39,16 @@ function usage() {
   exit 1
 }
 
-while getopts ":a:b:d:e:hl:m:n:p:s:" o; do
+while getopts ":a:b:c:d:e:hl:m:n:p:s:" o; do
   case "${o}" in
     a)
       a=${OPTARG}
       ;;
     b)
       b=${OPTARG}
+      ;;
+    c)
+      c=${OPTARG}
       ;;
     d)
       d=${OPTARG}
@@ -76,6 +80,7 @@ shift $((OPTIND-1))
 
 l=${l:-"info"}
 b=${b:-""}
+c=${c:-"consul"}
 n=${n:-"3"}
 m=${m:-"5"}
 e=${e:-""}
@@ -167,7 +172,7 @@ function startWellKnownServer() {
   rm -rf "$data"
   special_echo "$dc well known server HTTP: 127.0.0.1:$http"
   set -o xtrace
-  consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan localhost:8701
+  consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan localhost:8701 -domain $c
 }
 
 function startServer() {
@@ -183,7 +188,7 @@ function startServer() {
   local config=$(serverConfig $dc)
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -server -bootstrap-expect $n -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan localhost:8701
+  consul agent -ui -server -bootstrap-expect $n -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan localhost:8701 -domain $c
 }
 
 function startClient() {
@@ -197,7 +202,7 @@ function startClient() {
   local config=$(clientConfig $dc)
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $config -datacenter $dc
+  consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $config -datacenter $dc -domain $c
 }
 
 function waitUntilClusterIsUp() {
