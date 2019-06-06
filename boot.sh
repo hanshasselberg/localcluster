@@ -129,6 +129,11 @@ function checkIfConsulIsRunningAlready() {
   fi
 }
 
+function knownServerPort() {
+  let "port = 8100 + $1"
+  echo $port
+}
+
 function joinPort() {
   let "port = 8300 + $1"
   echo $port
@@ -163,8 +168,8 @@ function startWellKnownServer() {
   local dc="$p$1"
   local id="s1"
   local data="$dc-$id"
-  let "server = 8100 + $1"
-  let "serf = 8300 + $1"
+  local server=$(knownServerPort $1)
+  local serf=$(joinPort $1)
   let "http = 8499 + $1"
   let "wan = 8700 + $1"
   local dns="-1"
@@ -195,6 +200,7 @@ function startClient() {
   local dc="$p$1"
   local id="c$2"
   local data="$dc-$id"
+  local knownServer=$(knownServerPort $1)
   local serf=$(serfPort $1 $3)
   local http=$(httpPort $1 $3)
   local dns=$(dnsPort $1 $3)
@@ -202,7 +208,7 @@ function startClient() {
   local config=$(clientConfig $dc)
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $config -datacenter $dc -domain $c
+  consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer
 }
 
 function waitUntilClusterIsUp() {
