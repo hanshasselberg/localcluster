@@ -31,6 +31,7 @@ function usage() {
   special_errecho "  -n number of servers (defaults to 3)"
   special_errecho "  -p dc prefix (defaults to dc)"
   special_errecho "  -s path to config file for servers"
+  special_errecho "  -w no wan-join"
   special_errecho ""
   special_errecho "Examples:"
   special_errecho '  `./boot.sh` # will boot 3 servers and 5 clients'
@@ -39,7 +40,7 @@ function usage() {
   exit 1
 }
 
-while getopts ":a:b:c:d:e:hl:m:n:p:s:" o; do
+while getopts ":a:b:c:d:e:hl:m:n:p:s:w" o; do
   case "${o}" in
     a)
       a=${OPTARG}
@@ -71,6 +72,9 @@ while getopts ":a:b:c:d:e:hl:m:n:p:s:" o; do
     s)
       s=${OPTARG}
       ;;
+    w)
+      w=1
+      ;;
     h)
       usage
       ;;
@@ -87,6 +91,11 @@ e=${e:-""}
 echo "{}">dummy.json
 d=${d:-"1"}
 p=${p:-"dc"}
+
+wanJoin="localhost:8701"
+if [ -n "${w:-""}" ]; then
+  wanJoin="''"
+fi
 
 function clientConfig() {
   if [ -n "${a-}" ]; then
@@ -174,10 +183,11 @@ function startWellKnownServer() {
   let "wan = 8700 + $1"
   local dns="-1"
   local config=$(serverConfig $dc)
+
   rm -rf "$data"
   special_echo "$dc well known server HTTP: 127.0.0.1:$http"
   set -o xtrace
-  consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan localhost:8701 -domain $c
+  consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan $wanJoin -domain $c
 }
 
 function startServer() {
@@ -191,9 +201,10 @@ function startServer() {
   local dns=$(dnsPort $1 $3)
   local join=$(joinPort $1)
   local config=$(serverConfig $dc)
+
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -server -bootstrap-expect $n -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan localhost:8701 -domain $c
+  consul agent -ui -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan "$wanJoin" -domain $c
 }
 
 function startClient() {
@@ -208,7 +219,7 @@ function startClient() {
   local config=$(clientConfig $dc)
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -retry-join "localhost:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer
+  consul agent -ui -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port -1 -http-port "$http" -dns-port "$dns" -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer
 }
 
 function waitUntilClusterIsUp() {
@@ -218,7 +229,7 @@ function waitUntilClusterIsUp() {
     local dc="$p$i"
     while true; do
       set +e
-      count=$(curl -s "localhost:8500/v1/agent/members?dc=$dc" | jq '. | length')
+      count=$(curl -s "127.0.0.1:8500/v1/agent/members?dc=$dc" | jq '. | length')
       set -e
       if [ "$count" = "$total" ]; then
         special_echo "$dc is up"
