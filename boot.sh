@@ -92,11 +92,6 @@ echo "{}">dummy.json
 d=${d:-"1"}
 p=${p:-"dc"}
 
-wanJoin="localhost:8701"
-if [ -n "${w:-""}" ]; then
-  wanJoin="''"
-fi
-
 function clientConfig() {
   if [ -n "${a-}" ]; then
     echo $a
@@ -187,7 +182,11 @@ function startWellKnownServer() {
   rm -rf "$data"
   special_echo "$dc well known server HTTP: 127.0.0.1:$http"
   set -o xtrace
-  consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan $wanJoin -domain $c
+  if [ -n "${w:-""}" ]; then
+    consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c
+  else
+    consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 128.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-wan-join "127.0.0.1:8701"
+  fi
 }
 
 function startServer() {
@@ -204,7 +203,11 @@ function startServer() {
 
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -retry-join-wan "$wanJoin" -domain $c
+  if [ -n "${w:-""}" ]; then
+    consul agent -ui -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c
+  else
+    consul agent -ui -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
+  fi
 }
 
 function startClient() {
