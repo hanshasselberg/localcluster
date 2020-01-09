@@ -183,9 +183,9 @@ function startWellKnownServer() {
   special_echo "$dc well known server HTTP: 127.0.0.1:$http"
   set -o xtrace
   if [ -n "${w:-""}" ]; then
-    consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c
+    consul agent -ui -server -http-port "$http" -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c
   else
-    consul agent -ui -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
+    consul agent -ui -server -http-port "$http" -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
   fi
 }
 
@@ -204,9 +204,9 @@ function startServer() {
   rm -rf "$data"
   set -o xtrace
   if [ -n "${w:-""}" ]; then
-    consul agent -ui -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c
+    consul agent -ui -server -http-port "$http" -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c
   else
-    consul agent -ui -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -http-port "$http" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
+    consul agent -ui -server -http-port "$http" -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
   fi
 }
 
