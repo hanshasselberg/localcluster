@@ -280,6 +280,9 @@ execBefore $b
 
 instanceCounter=0
 for (( i=1; i<=$d; i++ )); do
+  dc=$p$i
+  special_echo "$dc server config: $(serverConfig "$dc")"
+  special_echo "$dc client config: $(clientConfig "$dc")"
   startWellKnownServer $i &
   for (( j=2; j<=$n; j++ )); do
     startServer $i $j $instanceCounter &
