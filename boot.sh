@@ -92,6 +92,10 @@ echo "{}">dummy.json
 d=${d:-"1"}
 p=${p:-"dc"}
 
+portFile="$TMPDIR"localclusterLastUsedPort
+lockFile="$TMPDIR"localclusterLock
+echo 9999 > $portFile
+
 function clientConfig() {
   if [ -n "${a-}" ]; then
     echo $a
@@ -143,29 +147,8 @@ function joinPort() {
   echo $port
 }
 
-function serverPort() {
-  let "port = 10000 + $100 - 100 + $2"
-  echo $port
-}
-
-function serfPort() {
-  let "port = 20000 + $100 - 100 + $2"
-  echo $port
-}
-
-function httpPort() {
-  let "port = 30000 + $100 - 100 + $2"
-  echo $port
-}
-
-function wanPort() {
-  let "port = 40000 + $100 - 100 + $2"
-  echo $port
-}
-
-function dnsPort() {
-  let "port = 50000 + $100 - 100 + $2"
-  echo $port
+function freePort() {
+  ./incr.pl "$lockFile" "$portFile"
 }
 
 function startWellKnownServer() {
@@ -193,11 +176,11 @@ function startServer() {
   local dc="$p$1"
   local id="s$2"
   local data="$dc-$id"
-  local server=$(serverPort $1 $3)
-  local serf=$(serfPort $1 $3)
-  local wan=$(wanPort $1 $3)
-  local http=$(httpPort $1 $3)
-  local dns=$(dnsPort $1 $3)
+  local server=$(freePort)
+  local serf=$(freePort)
+  local wan=$(freePort)
+  local http=$(freePort)
+  local dns=$(freePort)
   local join=$(joinPort $1)
   local config=$(serverConfig $dc)
 
@@ -215,9 +198,9 @@ function startClient() {
   local id="c$2"
   local data="$dc-$id"
   local knownServer=$(knownServerPort $1)
-  local serf=$(serfPort $1 $3)
-  local http=$(httpPort $1 $3)
-  local dns=$(dnsPort $1 $3)
+  local serf=$(freePort)
+  local http=$(freePort)
+  local dns=$(freePort)
   local join=$(joinPort $1)
   local config=$(clientConfig $dc)
   rm -rf "$data"
