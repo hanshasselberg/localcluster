@@ -148,7 +148,9 @@ function joinPort() {
 }
 
 function freePort() {
+  set +o xtrace
   ./incr.pl "$lockFile" "$portFile"
+  set -o xtrace
 }
 
 function startWellKnownServer() {
