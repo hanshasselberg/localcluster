@@ -97,6 +97,10 @@ d=${d:-"1"}
 p=${p:-"dc"}
 x=${x:-""}
 
+if [ "$e" != "$e/args" ]; then
+  eval $(cat $e/args)
+fi
+
 portFile="$TMPDIR"localclusterLastUsedPort
 lockFile="$TMPDIR"localclusterLock
 echo 9999 > $portFile
@@ -237,14 +241,12 @@ function execBefore() {
     set -e
     special_echo "$out"
   fi
-  if [ "$e" != "." ]; then
-    if [ -f "$e/before" ]; then
-      special_echo "running $e/before"
-      set +e
-      out=$($e/before)
-      set -e
-      special_echo "$out"
-    fi
+  if [ -f "$e/before" ]; then
+    special_echo "running $e/before"
+    set +e
+    out=$($e/before)
+    set -e
+    special_echo "$out"
   fi
 }
 
@@ -256,14 +258,12 @@ function execWhenClusterReady() {
     set -e
     special_echo "$out"
   fi
-  if [ "$e" != "." ]; then
-    if [ -f "$e/after" ]; then
-      special_echo "running $e/after"
-      set +e
-      out=$($e/after)
-      set -e
-      special_echo "$out"
-    fi
+  if [ -f "$e/after" ]; then
+    special_echo "running $e/after"
+    set +e
+    out=$($e/after)
+    set -e
+    special_echo "$out"
   fi
 }
 

@@ -1,4 +1,5 @@
 {
+	"primary_datacenter": "dc1",
 	"connect": {
 		"enabled": true
 	}
