@@ -92,6 +92,7 @@ c=${c:-"consul"}
 n=${n:-"3"}
 m=${m:-"5"}
 e=${e:-"."}
+e=${e%/}
 echo "{}">dummy.json
 d=${d:-"1"}
 p=${p:-"dc"}
