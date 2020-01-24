@@ -1,0 +1,9 @@
+#!/bin/bash
+
+/usr/local/bin/socat -v tcp-l:8181,fork exec:"/bin/cat" &
+
+env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul services register examples/multidc_connect/socat.json
+env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul services register examples/multidc_connect/web.json
+
+env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul connect proxy -sidecar-for socat
+env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul connect proxy -sidecar-for web

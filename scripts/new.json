@@ -1,0 +1,1 @@
+{ "provider": "consul", "config": { "PrivateKey": "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIPnViNbCb5XWYNfIKX2t22vh/BE7ZQEUJDy8MpVQbLIIoAoGCCqGSM49\nAwEHoUQDQgAERSO36ah0gjCUkeULTz9FBTyguroQPN785KCmBobqFea2GNxI1oOs\nQnbchuSxxWdPwT9XsXTJOwhvOgclcUabEw==\n-----END EC PRIVATE KEY-----" } }

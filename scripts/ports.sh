@@ -50,4 +50,4 @@ else
 fi
 
 errecho "$p ports in $d"
-head -300 $(realpath "$0" | sed 's|\(.*\)/.*|\1|')/../out.log | grep -E "\+ consul.*$d-$t\\d+" | awk "{print \$$i}"
+head -10000 $(realpath "$0" | sed 's|\(.*\)/.*|\1|')/../out.log | grep -E "\+ consul.*$d-$t\\d+" | awk "{print \$$i}"
