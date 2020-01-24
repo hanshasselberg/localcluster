@@ -24,7 +24,7 @@ function usage() {
   special_errecho "  -b path to script to execute before we start consul"
   special_errecho "  -c domain"
   special_errecho "  -d number of datacenters to spin up and wan-join together"
-  special_errecho "  -e path to script to execute after the cluster is up, must be executable"
+  special_errecho "  -x path to example"
   special_errecho "  -h show this help"
   special_errecho "  -l log level (defaults to info)"
   special_errecho "  -m number of clients (defaults to 5)"
@@ -32,6 +32,7 @@ function usage() {
   special_errecho "  -p dc prefix (defaults to dc)"
   special_errecho "  -s path to config file for servers"
   special_errecho "  -w no wan-join"
+  special_errecho "  -x path to script to execute after the cluster is up, must be executable"
   special_errecho ""
   special_errecho "Examples:"
   special_errecho '  `./boot.sh` # will boot 3 servers and 5 clients'
@@ -40,7 +41,7 @@ function usage() {
   exit 1
 }
 
-while getopts ":a:b:c:d:e:hl:m:n:p:s:w" o; do
+while getopts ":a:b:c:d:e:hl:m:n:p:s:w:x" o; do
   case "${o}" in
     a)
       a=${OPTARG}
@@ -75,6 +76,9 @@ while getopts ":a:b:c:d:e:hl:m:n:p:s:w" o; do
     w)
       w=1
       ;;
+    x)
+      x=${OPTARG}
+      ;;
     h)
       usage
       ;;
@@ -87,10 +91,11 @@ b=${b:-""}
 c=${c:-"consul"}
 n=${n:-"3"}
 m=${m:-"5"}
-e=${e:-""}
+e=${e:-"."}
 echo "{}">dummy.json
 d=${d:-"1"}
 p=${p:-"dc"}
+x=${x:-""}
 
 portFile="$TMPDIR"localclusterLastUsedPort
 lockFile="$TMPDIR"localclusterLock
@@ -102,12 +107,12 @@ function clientConfig() {
     return
   fi
   local dc="$1"
-  if [ -f "./client_$dc.json" ]; then
-    echo "client_$dc.json"
+  if [ -f "$e/client_$dc.json" ]; then
+    echo "$e/client_$dc.json"
     return
   fi
-  if [ -f "./client.json" ]; then
-    echo "client.json"
+  if [ -f "$e/client.json" ]; then
+    echo "$e/client.json"
     return
   fi
   echo "dummy.json"
@@ -119,12 +124,12 @@ function serverConfig() {
     return
   fi
   local dc="$1"
-  if [ -f "./server_$dc.json" ]; then
-    echo "server_$dc.json"
+  if [ -f "$e/server_$dc.json" ]; then
+    echo "$e/server_$dc.json"
     return
   fi
-  if [ -f "./server.json" ]; then
-    echo "server.json"
+  if [ -f "$e/server.json" ]; then
+    echo "$e/server.json"
     return
   fi
   echo "dummy.json"
@@ -232,6 +237,15 @@ function execBefore() {
     set -e
     special_echo "$out"
   fi
+  if [ "$e" != "." ]; then
+    if [ -f "$e/before" ]; then
+      special_echo "running $e/before"
+      set +e
+      out=$($e/before)
+      set -e
+      special_echo "$out"
+    fi
+  fi
 }
 
 function execWhenClusterReady() {
@@ -241,6 +255,15 @@ function execWhenClusterReady() {
     out=$($1)
     set -e
     special_echo "$out"
+  fi
+  if [ "$e" != "." ]; then
+    if [ -f "$e/after" ]; then
+      special_echo "running $e/after"
+      set +e
+      out=$($e/after)
+      set -e
+      special_echo "$out"
+    fi
   fi
 }
 
@@ -277,6 +300,6 @@ done
 
 waitUntilClusterIsUp $n $m
 
-execWhenClusterReady $e
+execWhenClusterReady $x
 
 cat # wait forever

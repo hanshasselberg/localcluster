@@ -1,0 +1,6 @@
+set n (math "1024 * $argv")
+echo "n: $argv kb $n b"
+set v (yes 1 | head -n $n | tr -d "\n" | openssl base64 | string join "\n")
+cat txn.json | string replace "X" "$v" > body
+wc -c body
+curl -X PUT localhost:8500/v1/txn -d @body
