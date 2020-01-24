@@ -24,4 +24,5 @@ Examples:
   `./boot.sh` # will boot 3 servers and 5 clients
   `./boot.sh -n 5 -m 20` # will boot 5 servers and 20 clients
   `./boot.sh -n 5 -m 20 -d 3` # will boot 5 servers and 20 clients each in dc1, dc2, and dc3 wan-joined together.
+  `./boot.sh -e examples/auto_encrypt/` # will run example setup
 ```
