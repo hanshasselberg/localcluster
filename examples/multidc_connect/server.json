@@ -1,6 +1,9 @@
 {
 	"primary_datacenter": "dc1",
 	"connect": {
-		"enabled": true
+		"enabled": true,
+		"ca_config": {
+			"intermediate_cert_ttl": "4m"
+		}
 	}
 }
