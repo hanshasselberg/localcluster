@@ -98,7 +98,7 @@ d=${d:-"1"}
 p=${p:-"dc"}
 x=${x:-""}
 
-if [ "$e" != "$e/args" ]; then
+if [ -f "$e/args" ]; then
   eval $(cat $e/args)
 fi
 
@@ -157,6 +157,11 @@ function joinPort() {
   echo $port
 }
 
+function knownHttpPort() {
+  let "http = 8499 + $1"
+  echo $http
+}
+
 function freePort() {
   set +o xtrace
   ./incr.pl "$lockFile" "$portFile"
@@ -169,7 +174,7 @@ function startWellKnownServer() {
   local data="$dc-$id"
   local server=$(knownServerPort $1)
   local serf=$(joinPort $1)
-  let "http = 8499 + $1"
+  local http=$(knownHttpPort $1)
   let "wan = 8700 + $1"
   local dns="-1"
   local config=$(serverConfig $dc)
@@ -220,12 +225,23 @@ function waitUntilClusterIsUp() {
   let "total = $1 + $2"
   for i in $(seq $d); do
     local dc="$p$i"
+    local port=$(knownHttpPort $i)
     while true; do
       set +e
-      count=$(curl -s "127.0.0.1:8500/v1/agent/members?dc=$dc" | jq '. | length')
+      leader=$(curl -s "localhost:$port/v1/agent/self" | jq -r '.Stats.consul.leader_addr')
+      set -e
+      if [ "$leader" != "" ]; then
+        special_echo "$dc has leader"
+        break
+      fi
+      sleep 2
+    done
+    while true; do
+      set +e
+      count=$(curl -s "localhost:$port/v1/agent/members?dc=$dc" | jq '. | length')
       set -e
       if [ "$count" = "$total" ]; then
-        special_echo "$dc is up"
+        special_echo "$dc members alive"
         break
       fi
       sleep 2
