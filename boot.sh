@@ -105,6 +105,9 @@ fi
 portFile="$TMPDIR"localclusterLastUsedPort
 lockFile="$TMPDIR"localclusterLock
 echo 9999 > $portFile
+clusterFile="$TMPDIR"localclusterCluster
+echo "" > $clusterFile
+echo "[]" > cluster.json
 
 function clientConfig() {
   if [ -n "${a-}" ]; then
@@ -168,13 +171,23 @@ function freePort() {
   set -o xtrace
 }
 
+function addLine() {
+  set +o xtrace
+  ./cluster.pl "$lockFile" "$clusterFile" "$1"
+  set -o xtrace
+}
+
+function addAgent() {
+  addLine "{\"dc\": \"$1\", \"id\": \"$2\", \"http\": \"$3\", \"mode\": \"$4\", \"env\": \"localhost:$3\"},"
+}
+
 function startWellKnownServer() {
   local dc="$p$1"
   local id="s1"
   local data="$dc-$id"
   local server=$(knownServerPort $1)
   local serf=$(joinPort $1)
-  local http=$(knownHttpPort $1)
+  local http=$2
   let "wan = 8700 + $1"
   local dns="-1"
   local config=$(serverConfig $dc)
@@ -196,12 +209,14 @@ function startServer() {
   local join=$(joinPort $1)
   local config=$(serverConfig $dc)
 
+  local http=$3
+
   rm -rf "$data"
   set -o xtrace
   if [ -n "${w:-""}" ]; then
-	  consul agent -ui -http-port $(freePort) -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c
+	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c
   else
-	  consul agent -ui -http-port $(freePort) -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
+	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
   fi
 }
 
@@ -211,13 +226,14 @@ function startClient() {
   local data="$dc-$id"
   local knownServer=$(knownServerPort $1)
   local serf=$(freePort)
-  local http=$(freePort)
+  local http=$3
   local dns=$(freePort)
   local join=$(joinPort $1)
   local config=$(clientConfig $dc)
   rm -rf "$data"
   set -o xtrace
-  consul agent -ui -http-port $(freePort) -grpc-port $(freePort) -https-port $(freePort) -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port -1 -dns-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer
+
+  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port -1 -dns-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer
 }
 
 function waitUntilClusterIsUp() {
@@ -298,24 +314,32 @@ checkIfConsulIsRunningAlready
 
 execBefore $b
 
-instanceCounter=0
 for (( i=1; i<=$d; i++ )); do
   dc=$p$i
   special_echo "$dc server config: $(serverConfig "$dc")"
   special_echo "$dc client config: $(clientConfig "$dc")"
-  startWellKnownServer $i &
+  http=$(knownHttpPort $i)
+  startWellKnownServer $i $http &
+  addAgent $dc s1 $http "server"
+
   for (( j=2; j<=$n; j++ )); do
-    startServer $i $j $instanceCounter &
-    ((instanceCounter++))
+    http=$(freePort)
+    startServer $i $j $http &
+    addAgent $dc s$j $http "server"
   done
 
   for (( j=1; j<=$m; j++ )); do
-    startClient $i $j $instanceCounter &
-    ((instanceCounter++))
+    http=$(freePort)
+    startClient $i $j $http &
+    addAgent $dc c$j $http "client"
   done
 done
 
 waitUntilClusterIsUp $n $m
+
+lines=$(cat "$clusterFile" | sed 's/.$//')
+echo "[${lines}]" > cluster.json
+special_echo "wrote cluster.json"
 
 execWhenClusterReady $x
 
