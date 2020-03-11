@@ -1,0 +1,4 @@
+{
+	"autopilot": { "min_quorum": 3, "redundancy_zone_tag": "zone" },
+	"node_meta": { "zone": "C" }
+}
