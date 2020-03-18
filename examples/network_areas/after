@@ -1,0 +1,6 @@
+envdc1=$(jq -r 'map(select(.dc == "dc1" and .id == "s1")) | .[].env' cluster.json)
+envdc2=$(jq -r 'map(select(.dc == "dc2" and .id == "s1")) | .[].env' cluster.json)
+serverdc1=$(jq -r 'map(select(.dc == "dc1" and .id == "s1")) | .[].server_port' cluster.json)
+serverdc2=$(jq -r 'map(select(.dc == "dc2" and .id == "s1")) | .[].server_port' cluster.json)
+env CONSUL_HTTP_ADDR=$envdc1 consul operator area create -peer-datacenter=dc2 -retry-join localhost:$serverdc2
+env CONSUL_HTTP_ADDR=$envdc2 consul operator area create -peer-datacenter=dc1 -retry-join localhost:$serverdc1
