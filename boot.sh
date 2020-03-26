@@ -196,7 +196,7 @@ function addLine() {
 }
 
 function addAgent() {
-  addLine "{\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": \"$3\", \"server_port\": $4, \"mode\": \"$5\", \"env\": \"localhost:$3\"},"
+  addLine "\"$2.$1\": {\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": \"$3\", \"server_port\": $4, \"mode\": \"$5\", \"address\": \"localhost:$3\"},"
 }
 
 function startWellKnownServer() {
@@ -287,38 +287,25 @@ function waitUntilClusterIsUp() {
   special_echo "cluster is up"
 }
 
-function execBefore() {
+function execScript() {
+  status=0
   if [ -n "${1-}" ]; then
     special_echo "running $1"
     set +e
     out=$($1)
+    status=$?
     set -e
     special_echo "$out"
   fi
-  if [ -f "$e/before" ]; then
-    special_echo "running $e/before"
+  if [ -f "$e/$2" ]; then
+    special_echo "running $e/$2"
     set +e
-    out=$($e/before)
+    out=$($e/$2)
+    status=$?
     set -e
     special_echo "$out"
   fi
-}
-
-function execWhenClusterReady() {
-  if [ -n "${1-}" ]; then
-    special_echo "running $1"
-    set +e
-    out=$($1)
-    set -e
-    special_echo "$out"
-  fi
-  if [ -f "$e/after" ]; then
-    special_echo "running $e/after"
-    set +e
-    out=$($e/after)
-    set -e
-    special_echo "$out"
-  fi
+  return $status
 }
 
 trap 'killall' INT
@@ -339,11 +326,11 @@ if [ -n "$y" ]; then
 else
 	echo 9999 > $portFile
 	echo "" > $clusterFile
-	echo "[]" > cluster.json
+	echo "{}" > cluster.json
 
 	checkIfConsulIsRunningAlready
 
-	execBefore $b
+        execScript "$b" "before"
 
 	for (( i=1; i<=$d; i++ )); do
 	  dc=$p$i
@@ -369,10 +356,10 @@ else
 	waitUntilClusterIsUp $n $m
 
 	lines=$(cat "$clusterFile" | sed 's/.$//')
-	echo "[${lines}]" > cluster.json
+	echo "{\"servers\": {${lines}}}" > cluster.json
 	special_echo "wrote cluster.json"
 
-	execWhenClusterReady $x
+        execScript "$x" "after"
 fi
 
 cat # wait forever
