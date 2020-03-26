@@ -203,9 +203,9 @@ function startWellKnownServer() {
   local dc="$p$1"
   local id="s1"
   local data="$dc-$id"
-  local server=$(knownServerPort $1)
   local serf=$(joinPort $1)
   local http=$2
+  local server=$3
   let "wan = 8700 + $1"
   local dns="-1"
   local config=$(serverConfig $dc $id)
