@@ -2,6 +2,8 @@
 
 This tool spins up a local consul cluster for you with any number of servers and clients you might want.
 
+All the log output ends up in `out.log` and `cluster.json` contains info about every server and client in your cluster.
+
 ## Usage
 
 ```
