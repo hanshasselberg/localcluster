@@ -37,9 +37,10 @@ function usage() {
   special_errecho "  -y start server"
   special_errecho ""
   special_errecho "Examples:"
-  special_errecho '  `./boot.sh` # will boot 3 servers and 5 clients'
-  special_errecho '  `./boot.sh -n 5 -m 20` # will boot 5 servers and 20 clients'
-  special_errecho '  `./boot.sh -n 5 -m 20 -d 3` # will boot 5 servers and 20 clients each in dc1, dc2, and dc3 wan-joined together.'
+  special_errecho '  `./boot.sh` # boots 3 servers and 5 clients'
+  special_errecho '  `./boot.sh -e examples/auto_encrypt` # boots auto_encrypt setup'
+  special_errecho '  `./boot.sh -n 5 -m 20` # boots 5 servers and 20 clients'
+  special_errecho '  `./boot.sh -n 5 -m 20 -d 3` # boots 5 servers and 20 clients each in dc1, dc2, and dc3 wan-joined together.'
   exit 1
 }
 
