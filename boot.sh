@@ -197,7 +197,7 @@ function addLine() {
 }
 
 function addAgent() {
-  addLine "\"$2.$1\": {\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": \"$3\", \"server_port\": $4, \"mode\": \"$5\", \"address\": \"localhost:$3\"},"
+  addLine "\"$2.$1\": {\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": $3, \"server_port\": $4, \"mode\": \"$5\", \"address\": \"localhost:$3\"},"
 }
 
 function startWellKnownServer() {
