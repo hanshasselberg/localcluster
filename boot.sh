@@ -44,7 +44,7 @@ function usage() {
   exit 1
 }
 
-while getopts ":a:b:c:d:e:hl:m:n:p:s:v:w:x:y:" o; do
+while getopts ":a:b:c:d:e:hl:m:n:p:s:v:w:x:y:z" o; do
   case "${o}" in
     a)
       a=${OPTARG}
@@ -88,6 +88,9 @@ while getopts ":a:b:c:d:e:hl:m:n:p:s:v:w:x:y:" o; do
     y)
       y=${OPTARG}
       ;;
+    z)
+      z=1
+      ;;
     h)
       usage
       ;;
@@ -109,6 +112,7 @@ p=${p:-"dc"}
 v=${v:-""}
 x=${x:-""}
 y=${y:-""}
+z=${z:-""}
 
 portFile="$TMPDIR"localclusterLastUsedPort
 lockFile="$TMPDIR"localclusterLock
@@ -310,6 +314,11 @@ function execScript() {
 }
 
 trap 'killall' INT
+
+if [ -n "$z" ]; then
+        special_echo $(freePort)
+	exit
+fi
 
 killall() {
   # ignore INT and TERM while shutting down

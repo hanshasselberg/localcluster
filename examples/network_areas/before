@@ -1,0 +1,7 @@
+#!/bin/bash
+rm *.pem
+consul tls ca create
+consul tls cert create -server -dc dc1
+consul tls cert create -server -dc dc2
+consul tls cert create -server -dc dc3
+consul tls cert create -client
