@@ -4,9 +4,6 @@ set -e
 set -u
 set -o pipefail
 
-rm -f out.log
-exec 3>&1
-exec 4>&2
 
 function special_echo() {
   echo "$@" >&3
@@ -16,8 +13,6 @@ function special_errecho() {
   echo "$@" >&4
 }
 
-exec &> out.log
-
 function usage() { 
   special_errecho "Usage: $0 OPTIONS"
   special_errecho "  -a path to config file for agents"
@@ -25,6 +20,7 @@ function usage() {
   special_errecho "  -c domain"
   special_errecho "  -d number of datacenters to spin up and wan-join together"
   special_errecho "  -e path to example"
+  special_errecho "  -f number of network segments to spin up"
   special_errecho "  -h show this help"
   special_errecho "  -l log level (defaults to info)"
   special_errecho "  -m number of clients (defaults to 5)"
@@ -35,6 +31,7 @@ function usage() {
   special_errecho "  -w no wan-join"
   special_errecho "  -x path to script to execute after the cluster is up, must be executable"
   special_errecho "  -y start server"
+  special_errecho "  -z start client"
   special_errecho ""
   special_errecho "Examples:"
   special_errecho '  `./boot.sh` # boots 3 servers and 5 clients'
@@ -44,7 +41,7 @@ function usage() {
   exit 1
 }
 
-while getopts ":a:b:c:d:e:hl:m:n:p:s:v:w:x:y:z" o; do
+while getopts ":a:b:c:d:f:e:hl:m:n:p:s:v:w:x:y:z:" o; do
   case "${o}" in
     a)
       a=${OPTARG}
@@ -60,6 +57,9 @@ while getopts ":a:b:c:d:e:hl:m:n:p:s:v:w:x:y:z" o; do
       ;;
     e)
       e=${OPTARG}
+      ;;
+    f)
+      f=${OPTARG}
       ;;
     l)
       l=${OPTARG}
@@ -89,7 +89,7 @@ while getopts ":a:b:c:d:e:hl:m:n:p:s:v:w:x:y:z" o; do
       y=${OPTARG}
       ;;
     z)
-      z=1
+      z=${OPTARG}
       ;;
     h)
       usage
@@ -108,6 +108,7 @@ e=${e:-"."}
 e=${e%/}
 echo "{}">dummy.json
 d=${d:-"1"}
+f=${f:-""}
 p=${p:-"dc"}
 v=${v:-""}
 x=${x:-""}
@@ -117,10 +118,6 @@ z=${z:-""}
 portFile="$TMPDIR"localclusterLastUsedPort
 lockFile="$TMPDIR"localclusterLock
 clusterFile="$TMPDIR"localclusterCluster
-
-if [ -f "$e/args" ]; then
-  eval $(cat $e/args)
-fi
 
 function clientConfig() {
   if [ -n "${a-}" ]; then
@@ -204,6 +201,17 @@ function addAgent() {
   addLine "\"$2.$1\": {\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": $3, \"server_port\": $4, \"mode\": \"$5\", \"address\": \"localhost:$3\"},"
 }
 
+function segmentsConfig(){
+  if [ -n "$f" ]; then
+    local result="segments = ["
+    for i in $(seq $f); do
+      local port=$(freePort)
+      result="$result { name = \"segment$i\", port = $port },"
+    done
+    echo "${result%?} ]"
+  fi
+}
+
 function startWellKnownServer() {
   local dc="$p$1"
   local id="s1"
@@ -214,14 +222,15 @@ function startWellKnownServer() {
   let "wan = 8700 + $1"
   local dns="-1"
   local config=$(serverConfig $dc $id)
+  local hcl=$(segmentsConfig)
 
   rm -rf "$data"
   special_echo "$dc well known server HTTP: 127.0.0.1:$http"
   set -o xtrace
   if [ -n "${w:-""}" ]; then
-	  consul agent -ui -http-port "$http" -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c
+	  consul agent -ui -http-port "$http" -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
   else
-	  consul agent -ui -http-port "$http" -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
+	  consul agent -ui -http-port "$http" -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -hcl "$hcl"
   fi
 }
 
@@ -235,14 +244,16 @@ function startServer() {
   local http=$3
   local server=$4
 
+  local hcl=$(segmentsConfig)
+
   rm -rf "$data"
   set -o xtrace
   if [ -n "${w:-""}" ]; then
-	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c
+	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
   elif [[ $v == *"$data"* ]]; then
-	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -non-voting-server
+	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -non-voting-server -hcl "$hcl"
   else
-	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701"
+	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -hcl "$hcl"
   fi
 }
 
@@ -310,15 +321,10 @@ function execScript() {
     set -e
     special_echo "$out"
   fi
-  return $status
+  # return $status
 }
 
 trap 'killall' INT
-
-if [ -n "$z" ]; then
-        special_echo $(freePort)
-	exit
-fi
 
 killall() {
   # ignore INT and TERM while shutting down
@@ -328,17 +334,32 @@ killall() {
   wait
 }
 
-if [ -n "$y" ]; then
+if [ -n "$y" ] && [ -n "$z" ]; then
         http=$(freePort)
         server=$(freePort)
 	fields=(${y//;/ })
 	startServer ${fields[0]} ${fields[1]} $http $server &
+elif [ -n "$z" ]; then
+        http=$(freePort)
+	fields=(${z//;/ })
+	startClient ${fields[0]} ${fields[1]} $http &
 else
+
+	rm -f out.log
+
+	exec 3>&1
+	exec 4>&2
+	exec &> out.log
+
+	checkIfConsulIsRunningAlready
+
 	echo 9999 > $portFile
 	echo "" > $clusterFile
 	echo "{}" > cluster.json
 
-	checkIfConsulIsRunningAlready
+	if [ -f "$e/args" ]; then
+		eval $(cat $e/args)
+	fi
 
         execScript "$b" "before"
 
