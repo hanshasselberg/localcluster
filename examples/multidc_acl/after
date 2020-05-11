@@ -1,17 +1,9 @@
-token=$(consul acl bootstrap | grep SecretID | awk '{print $2}')
-cat cluster.json | jq ". | {servers: .servers, bootstrap_token: \"$token\"}" > cluster_new.json
-mv cluster_new.json cluster.json
-echo "ACL bootstrap token: $token"
-
-echo 'CONSUL_HTTP_TOKEN=$(jq -r '.bootstrap_token' cluster.json) consul members'
-
-export CONSUL_HTTP_TOKEN=$token
+export CONSUL_HTTP_TOKEN=$(jq -r '.bootstrap_token' cluster.json)
+consul members
 
 consul acl policy create -name replication -rules @examples/multidc_acl/replication-policy.hcl
 consul acl token create -description "replication token" -policy-name replication
 replication_token=$(consul acl token create -description "replication token" -policy-name replication | grep SecretID | awk '{print $2}')
-
-export CONSUL_HTTP_TOKEN=$token
 
 for addr in $(jq -r '.servers[]|select(.dc == "dc2" and .mode == "server").address' cluster.json); do
   CONSUL_HTTP_ADDR=$addr consul acl set-agent-token replication "$replication_token"

@@ -281,7 +281,7 @@ function waitUntilClusterIsUp() {
     local port=$(knownHttpPort $i)
     while true; do
       set +e
-      leader=$(curl -s "localhost:$port/v1/agent/self" | jq -r '.Stats.consul.leader_addr')
+      leader=$(curl -H "X-Consul-Token: $(jq -r '.bootstrap_token' cluster.json)" -s "localhost:$port/v1/agent/self" | jq -r '.Stats.consul.leader_addr')
       set -e
       if [ "$leader" != "" ]; then
         special_echo "$dc has leader"
@@ -291,7 +291,7 @@ function waitUntilClusterIsUp() {
     done
     while true; do
       set +e
-      count=$(curl -s "localhost:$port/v1/agent/members?dc=$dc" | jq '. | length')
+      count=$(curl -H "X-Consul-Token: $(jq -r '.bootstrap_token' cluster.json)" -s "localhost:$port/v1/agent/members?dc=$dc" | jq '. | length')
       set -e
       if [ "$count" = "$total" ]; then
         special_echo "$dc members alive"
@@ -299,8 +299,48 @@ function waitUntilClusterIsUp() {
       fi
       sleep 2
     done
+    sleep 2
   done
   special_echo "cluster is up"
+}
+
+function aclBootstrap() {
+  set +e
+  # dc1 is hardcoded here.
+  # TODO make dynamic
+  enabled=$(jq '.acl.enabled' $(serverConfig dc1 1))
+  if [ "$enabled" = "true" ]; then
+    while true; do
+      out=$(consul acl bootstrap)
+      res=$?
+      if [ $res -eq 0 ]; then
+        secret=$(echo $out | grep SecretID | awk '{print $4}')
+        special_echo "ACL bootstrap token: $secret"
+        jq ". + {bootstrap_token: \"$secret\"}" cluster.json > cluster_new.json
+        mv cluster_new.json cluster.json
+        break
+      fi
+      sleep 2
+    done
+  fi
+  set -e
+}
+
+function writeClusterJson() {
+  # +1 for the first line that is a newline
+  let "total = $d * ($1 + $2) + 1"
+  while true; do
+    set +e
+    count=$(cat "$clusterFile" | wc -l)
+    if [ $count -eq $total ]; then
+      lines=$(cat "$clusterFile" | sed '$s/.$//')
+      echo "{\"servers\": {${lines}}}" > cluster.json
+      special_echo "wrote cluster.json"
+      break
+    fi
+    sleep 5
+  done
+  set -e
 }
 
 function execScript() {
@@ -384,11 +424,9 @@ else
 	  done
 	done
 
+	writeClusterJson $n $m
+	aclBootstrap
 	waitUntilClusterIsUp $n $m
-
-	lines=$(cat "$clusterFile" | sed 's/.$//')
-	echo "{\"servers\": {${lines}}}" > cluster.json
-	special_echo "wrote cluster.json"
 
         execScript "$x" "after"
 fi
