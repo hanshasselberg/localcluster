@@ -212,6 +212,10 @@ function segmentsConfig(){
   fi
 }
 
+function consulVersion() {
+  echo $(consul version | head -1 | awk '{print $2}')
+}
+
 function startWellKnownServer() {
   local dc="$p$1"
   local id="s1"
