@@ -4,6 +4,8 @@ set -e
 set -u
 set -o pipefail
 
+exec 3>&1
+exec 4>&2
 
 function special_echo() {
   echo "$@" >&3
@@ -391,8 +393,6 @@ else
 
 	rm -f out.log
 
-	exec 3>&1
-	exec 4>&2
 	exec &> out.log
 
 	checkIfConsulIsRunningAlready
