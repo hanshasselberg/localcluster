@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+rm -rf wrk*
+
+consul kv put bench benchmarking
+consul debug -duration 30s -interval 10s -archive=false
+
+for port in $(jq '.servers[]|select(.mode=="client").http_port' cluster.json); do
+  wrk -t12 -c20 -d30s http://localhost:$port/v1/kv/bench > wrk_$port.log &
+done
+
+wait
+
+echo "done"
