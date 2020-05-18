@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # start more servers hopefully non-voters
 ./boot.sh -e examples/redundancy_zones/ -y "1;4" &
 ./boot.sh -e examples/redundancy_zones/ -y "1;5" &

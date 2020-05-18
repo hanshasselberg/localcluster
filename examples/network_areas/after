@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 envdc1=$(jq -r '.servers."s1.dc1".address' cluster.json)
 envdc2=$(jq -r '.servers."s1.dc2".address' cluster.json)
 envdc3=$(jq -r '.servers."s1.dc3".address' cluster.json)

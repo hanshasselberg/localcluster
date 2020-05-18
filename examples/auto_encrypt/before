@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 rm *.pem
 consul tls ca create
 consul tls cert create -server

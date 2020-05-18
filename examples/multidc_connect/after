@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 env CONSUL_HTTP_ADDR=127.0.0.1:8500 consul services register examples/multidc_connect/echo.hcl
 env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul services register examples/multidc_connect/echo.hcl

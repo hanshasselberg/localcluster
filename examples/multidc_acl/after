@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 export CONSUL_HTTP_TOKEN=$(jq -r '.bootstrap_token' cluster.json)
 consul members
 
