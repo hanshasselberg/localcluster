@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 
-rm -rf wrk*
+dst=${dst:-"."}
+echo $dst
+rm -rf $dst/wrk* $dst/consul-debug
 
 consul kv put bench benchmarking
-consul debug -duration 30s -interval 10s -archive=false
+consul debug -output $dst/consul-debug -duration 30s -interval 10s -archive=false &
 
 for port in $(jq '.servers[]|select(.mode=="client").http_port' cluster.json); do
-  wrk -t12 -c20 -d30s http://localhost:$port/v1/kv/bench > wrk_$port.log &
+  wrk -t12 -c20 -d30s http://localhost:$port/v1/kv/bench > $dst/wrk_$port.log &
 done
 
 wait
 
-echo "done"
+echo "for d in *pool; echo $d; cat $d/wrk* | grep 'Req/Sec' ; end"
+echo "for d in *pool; echo $d; go tool pprof -top $d/consul-debug/*/profile.prof | tail -20 ; end"
