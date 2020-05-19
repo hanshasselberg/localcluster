@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+touch examples/checks/{counting,dashboard,database}
+
+c1port=$(jq -r '.servers."c1.dc1".http_port' cluster.json)
+c2port=$(jq -r '.servers."c2.dc1".http_port' cluster.json)
+
+curl --request PUT --data @examples/checks/dashboard.json http://127.0.0.1:$c1port/v1/agent/service/register
+curl --request PUT --data @examples/checks/counting.json http://127.0.0.1:$c2port/v1/agent/service/register
+curl --request PUT --data @examples/checks/database.json http://127.0.0.1:$c2port/v1/agent/service/register
+
+echo "the existence of the following files: examples/checks/{counting,database,dashboard}, decides about the healthiness of its checks."

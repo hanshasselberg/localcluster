@@ -1,0 +1,20 @@
+{
+	"ID": "database_id",
+	"name": "database",
+	"port": 5000,
+	"checks": [
+		{
+			"CheckID": "database_check",
+			"Name": "Check Database health",
+			"ServiceID": "database_id",
+			"Args": [
+				"/bin/sh",
+				"-c",
+				"/bin/test -f ./examples/checks/database || exit 2"
+			],
+			"Interval": "5s",
+			"Timeout": "1s"
+		}
+	]
+}
+

@@ -1,1 +1,4 @@
 dc*
+examples/checks/database
+examples/checks/counting
+examples/checks/dashboard

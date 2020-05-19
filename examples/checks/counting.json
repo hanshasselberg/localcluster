@@ -1,0 +1,24 @@
+{
+	"ID": "counting_id",
+	"name": "counting",
+	"port": 5000,
+	"checks": [
+		{
+			"CheckID": "counting_check",
+			"Name": "Check Counting health",
+			"ServiceID": "counting_id",
+			"Args": [
+				"/bin/sh",
+				"-c",
+				"/bin/test -f ./examples/checks/counting || exit 2"
+			],
+			"Interval": "5s",
+			"Timeout": "1s"
+		},
+		{
+			"Name": "Aliased local database",
+			"AliasService": "database_id"
+		}
+	]
+}
+

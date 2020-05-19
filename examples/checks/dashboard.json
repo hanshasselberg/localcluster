@@ -1,0 +1,25 @@
+{
+	"ID": "dashboard_id",
+	"name": "dashboard",
+	"port": 5001,
+	"checks": [
+		{
+			"CheckID": "dashboard_check",
+			"Name": "Check Dashboard health",
+			"ServiceID": "dashboard_id",
+			"Args": [
+				"/bin/sh",
+				"-c",
+				"/bin/test -f ./examples/checks/dashboard || exit 2"
+			],
+			"Interval": "5s",
+			"Timeout": "1s"
+		},
+		{
+			"Name": "Aliased remote counting",
+			"AliasNode": "c2",
+			"AliasService": "counting_id"
+		}
+	]
+}
+
