@@ -13,5 +13,5 @@ done
 
 wait
 
-echo "for d in *pool; echo $d; cat $d/wrk* | grep 'Req/Sec' ; end"
-echo "for d in *pool; echo $d; go tool pprof -top $d/consul-debug/*/profile.prof | head -20 ; end"
+echo "for d in *pool; echo \$d; cat \$d/wrk* | grep 'Req/Sec' ; end"
+echo "for d in *pool; echo \$d; go tool pprof -top \$d/consul-debug/*/profile.prof | head -20 ; end"
