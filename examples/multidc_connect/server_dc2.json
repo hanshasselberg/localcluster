@@ -1,0 +1,13 @@
+{
+	"primary_datacenter": "dc1",
+	"connect": {
+		"enabled": true,
+		"ca_provider": "vault",
+		"ca_config": {
+			"address": "http://localhost:8200",
+			"token": "s.rsXOgegxgNjAtX9Bda0QpI6o",
+			"root_pki_path": "connect-root",
+			"intermediate_pki_path": "connect-intermediate-dc2"
+		}
+	}
+}

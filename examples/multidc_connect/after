@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
+echo "env VAULT_DEV_ROOT_TOKEN_ID=(jq '.vault_token' cluster.json) VAULT_ADDR='http://127.0.0.1:8200' vault status"
+
 env CONSUL_HTTP_ADDR=127.0.0.1:8500 consul services register examples/multidc_connect/echo.hcl
 env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul services register examples/multidc_connect/echo.hcl
-env CONSUL_HTTP_ADDR=127.0.0.1:8500 consul services register examples/multidc_connect/client.hcl
-env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul services register examples/multidc_connect/client.hcl
 
-echo 'env CONSUL_HTTP_ADDR=127.0.0.1:8500 consul connect envoy -sidecar-for client'
-echo 'env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul connect envoy -sidecar-for client -admin-bind localhost:19001'
+# env CONSUL_HTTP_ADDR=127.0.0.1:8500 consul services register examples/multidc_connect/client.hcl
+# env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul services register examples/multidc_connect/client.hcl
+
+# echo 'env CONSUL_HTTP_ADDR=127.0.0.1:8500 consul connect envoy -sidecar-for client'
+# echo 'env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul connect envoy -sidecar-for client -admin-bind localhost:19001'
 # echo '/usr/local/bin/socat -v tcp-l:9090,fork exec:"/bin/cat"' 
 # echo 'env CONSUL_HTTP_ADDR=127.0.0.1:8501 consul connect envoy -sidecar-for echo -admin-bind localhost:19001'

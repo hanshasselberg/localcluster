@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+vault server -dev > vault.log &
+sleep 1
+token=$(grep "Root Token" vault.log | awk '{print $3}')
+echo $token > vault.token
+
+echo vault token: $token
+
+# inject token into consul connect ca config
+sed -i.bu "s/\"token\":.*/\"token\": \"$token\",/" examples/multidc_connect/server_dc1.json
+sed -i.bu "s/\"token\":.*/\"token\": \"$token\",/" examples/multidc_connect/server_dc2.json
+
+echo "env VAULT_DEV_ROOT_TOKEN_ID=(jq '.vault_token' cluster.json) VAULT_ADDR='http://127.0.0.1:8200' vault status"

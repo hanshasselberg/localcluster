@@ -1,0 +1,12 @@
+{
+	"connect": {
+		"enabled": true,
+		"ca_provider": "vault",
+		"ca_config": {
+			"address": "http://localhost:8200",
+			"token": "s.SwdRj7o75UJ0519kdlpgHfWb",
+			"root_pki_path": "connect-root",
+			"intermediate_pki_path": "connect-intermediate-dc1"
+		}
+	}
+}

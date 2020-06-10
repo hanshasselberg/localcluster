@@ -340,7 +340,7 @@ function writeClusterJson() {
     count=$(cat "$clusterFile" | wc -l)
     if [ $count -eq $total ]; then
       lines=$(cat "$clusterFile" | sed '$s/.$//')
-      echo "{\"servers\": {${lines}}}" > cluster.json
+      echo "{\"servers\": {${lines}}, \"vault_token\": \"$(cat vault.token)\"}" > cluster.json
       special_echo "wrote cluster.json"
       break
     fi

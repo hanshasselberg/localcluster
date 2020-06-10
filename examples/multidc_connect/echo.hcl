@@ -5,4 +5,3 @@ services {
     sidecar_service {}
   }
 }
-
