@@ -5,8 +5,8 @@
 		"ca_provider": "vault",
 		"ca_config": {
 			"address": "http://localhost:8200",
-			"token": "s.SwdRj7o75UJ0519kdlpgHfWb",
-			"root_pki_path": "connect-root-dc2",
+			"token": "s.5w473LkEaUkfffCXPv7JPg6o",
+			"root_pki_path": "connect-root",
 			"intermediate_pki_path": "connect-intermediate-dc2"
 		}
 	}

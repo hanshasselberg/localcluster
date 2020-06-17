@@ -2,5 +2,5 @@
 
 rm *.pem
 consul tls ca create
-consul tls cert create -server
-consul tls cert create -client
+consul tls cert create -dc dc1 -server
+consul tls cert create -dc dc2 -server

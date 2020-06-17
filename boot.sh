@@ -200,7 +200,11 @@ function addLine() {
 }
 
 function addAgent() {
-  addLine "\"$2.$1\": {\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": $3, \"server_port\": $4, \"mode\": \"$5\", \"address\": \"localhost:$3\"},"
+  addLine "\"$2.$1\": {\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": $3, \"https_port\": $4, \"server_port\": $5, \"mode\": \"$6\", \"address\": \"localhost:$3\"},"
+}
+
+function httpsPortConfig(){
+  echo "ports { https = $1 }"
 }
 
 function segmentsConfig(){
@@ -224,19 +228,20 @@ function startWellKnownServer() {
   local data="$dc-$id"
   local serf=$(joinPort $1)
   local http=$2
-  local server=$3
+  local https=$3
+  local server=$4
   let "wan = 8700 + $1"
   local dns="-1"
   local config=$(serverConfig $dc $id)
-  local hcl=$(segmentsConfig)
+  local hcl=$(httpsPortConfig $https) $(segmentsConfig)
 
   rm -rf "$data"
   special_echo "$dc well known server HTTP: 127.0.0.1:$http"
   set -o xtrace
   if [ -n "${w:-""}" ]; then
-	  consul agent -ui -http-port "$http" -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
+	  consul agent -ui -http-port "$http" -grpc-port $(freePort) -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
   else
-	  consul agent -ui -http-port "$http" -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -hcl "$hcl"
+	  consul agent -ui -http-port "$http" -grpc-port $(freePort) -server -bootstrap-expect $n -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -hcl "$hcl"
   fi
 }
 
@@ -248,18 +253,19 @@ function startServer() {
   local config=$(serverConfig $dc $id)
 
   local http=$3
-  local server=$4
+  local https=$4
+  local server=$5
 
-  local hcl=$(segmentsConfig)
+  local hcl=$(httpsPortConfig $https) $(segmentsConfig)
 
   rm -rf "$data"
   set -o xtrace
   if [ -n "${w:-""}" ]; then
-	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
+	  consul agent -ui -http-port $http -grpc-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
   elif [[ $v == *"$data"* ]]; then
-	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -non-voting-server -hcl "$hcl"
+	  consul agent -ui -http-port $http -grpc-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -non-voting-server -hcl "$hcl"
   else
-	  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -hcl "$hcl"
+	  consul agent -ui -http-port $http -grpc-port $(freePort) -server -bootstrap-expect $n -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -retry-join-wan "127.0.0.1:8701" -hcl "$hcl"
   fi
 }
 
@@ -270,13 +276,15 @@ function startClient() {
   local knownServer=$(knownServerPort $1)
   local serf=$(freePort)
   local http=$3
+  local https=$4
   local dns=$(freePort)
   local join=$(joinPort $1)
   local config=$(clientConfig $dc $id)
+  local hcl=$(httpsPortConfig $https)
   rm -rf "$data"
   set -o xtrace
 
-  consul agent -ui -http-port $http -grpc-port $(freePort) -https-port $(freePort) -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port -1 -dns-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer
+  consul agent -ui -http-port $http -grpc-port $(freePort) -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port -1 -dns-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer -hcl "$hcl"
 }
 
 function waitUntilClusterIsUp() {
@@ -410,21 +418,24 @@ else
 	for (( i=1; i<=$d; i++ )); do
 	  dc=$p$i
 	  http=$(knownHttpPort $i)
+	  https=$(freePort)
           server=$(knownServerPort $i)
-	  startWellKnownServer $i $http $server &
-	  addAgent $dc s1 $http $server "server"
+	  startWellKnownServer $i $http $https $server &
+	  addAgent $dc s1 $http $https $server "server"
 
 	  for (( j=2; j<=$n; j++ )); do
 	    http=$(freePort)
+	    https=$(freePort)
 	    server=$(freePort)
-	    startServer $i $j $http $server &
-	    addAgent $dc s$j $http $server "server"
+	    startServer $i $j $http $https $server &
+	    addAgent $dc s$j $http $https $server "server"
 	  done
 
 	  for (( j=1; j<=$m; j++ )); do
 	    http=$(freePort)
-	    startClient $i $j $http &
-	    addAgent $dc c$j $http 0 "client"
+	    https=$(freePort)
+	    startClient $i $j $http $https &
+	    addAgent $dc c$j $http $https 0 "client"
 	  done
 	done
 
