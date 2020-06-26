@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+consul kv put bench 1
+
+rm -rf wrk*
+
+for port in $(jq '.servers[].http_port' cluster.json); do
+  wrk -t20 -c50 -d3m -s examples/raft_bench/txn.lua http://localhost:$port > wrk_write_$port.log &
+done
+
+for port in $(jq '.servers[].http_port' cluster.json); do
+  wrk -t20 -c150 -d3m http://localhost:$port/v1/kv/bench > wrk_read_$port.log &
+done
+
+# wrk -t30 -c300 -d3m -s examples/raft_bench/txn.lua http://localhost:8500 > wrk_write_8500.log &
+# wrk -t30 -c600 -d3m http://localhost:8500/v1/kv/bench > wrk_read_8500.log &
+
+wait
+
+exit

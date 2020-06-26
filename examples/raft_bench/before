@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+
+CONSULVERSION=${CONSULVERSION:-"consul"}
+sed -i.bu "s/\"metrics_prefix\":.*/\"metrics_prefix\": \"$CONSULVERSION\"/" examples/raft_bench/server.json

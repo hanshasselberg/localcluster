@@ -5,8 +5,8 @@ envdc3=$(jq -r '.servers."s1.dc3".address' cluster.json)
 serverdc1=$(jq -r '.servers."s1.dc1".server_port' cluster.json)
 serverdc2=$(jq -r '.servers."s1.dc2".server_port' cluster.json)
 serverdc3=$(jq -r '.servers."s1.dc3".server_port' cluster.json)
-env CONSUL_HTTP_ADDR=$envdc1 consul operator area create -peer-datacenter=dc2 -retry-join localhost:$serverdc2
 env CONSUL_HTTP_ADDR=$envdc2 consul operator area create -peer-datacenter=dc1 -retry-join localhost:$serverdc1
+env CONSUL_HTTP_ADDR=$envdc1 consul operator area create -peer-datacenter=dc2 -retry-join localhost:$serverdc2
 
-env CONSUL_HTTP_ADDR=$envdc1 consul operator area create -peer-datacenter=dc3 -retry-join localhost:$serverdc3
 env CONSUL_HTTP_ADDR=$envdc3 consul operator area create -peer-datacenter=dc1 -retry-join localhost:$serverdc1
+env CONSUL_HTTP_ADDR=$envdc1 consul operator area create -peer-datacenter=dc3 -retry-join localhost:$serverdc3

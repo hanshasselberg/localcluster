@@ -1,0 +1,6 @@
+{
+	"telemetry": {
+		"dogstatsd_addr": "localhost:8125",
+		"metrics_prefix": "v1.7.0"
+	}
+}
