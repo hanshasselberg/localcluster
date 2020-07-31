@@ -32,8 +32,7 @@ function usage() {
   special_errecho "  -v list of non-voting servers"
   special_errecho "  -w no wan-join"
   special_errecho "  -x path to script to execute after the cluster is up, must be executable"
-  special_errecho "  -y start server"
-  special_errecho "  -z start client"
+  special_errecho "  -y path to script to execute after the servers are up, must be executable"
   special_errecho ""
   special_errecho "Examples:"
   special_errecho '  `./boot.sh` # boots 3 servers and 5 clients'
@@ -89,9 +88,6 @@ while getopts ":a:b:c:d:f:e:hl:m:n:p:s:v:w:x:y:z:" o; do
       ;;
     y)
       y=${OPTARG}
-      ;;
-    z)
-      z=${OPTARG}
       ;;
     h)
       usage
@@ -287,9 +283,28 @@ function startClient() {
   consul agent -ui -http-port $http -grpc-port $(freePort) -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port -1 -dns-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer -hcl "$hcl"
 }
 
-function waitUntilClusterIsUp() {
+function waitUntilClientsAreUp() {
   local up='false'
   let "total = $1 + $2"
+  for i in $(seq $d); do
+    local dc="$p$i"
+    local port=$(knownHttpPort $i)
+    while true; do
+      set +e
+      count=$(curl -H "X-Consul-Token: $(jq -r '.bootstrap_token' cluster.json)" -s "localhost:$port/v1/agent/members?dc=$dc" | jq '. | length')
+      set -e
+      if [ "$count" = "$total" ]; then
+        special_echo "$dc members alive"
+        break
+      fi
+      sleep 2
+    done
+    sleep 2
+  done
+  special_echo "clients are up"
+}
+
+function waitUntilServersAreUp() {
   for i in $(seq $d); do
     local dc="$p$i"
     local port=$(knownHttpPort $i)
@@ -303,20 +318,10 @@ function waitUntilClusterIsUp() {
       fi
       sleep 2
     done
-    while true; do
-      set +e
-      count=$(curl -H "X-Consul-Token: $(jq -r '.bootstrap_token' cluster.json)" -s "localhost:$port/v1/agent/members?dc=$dc" | jq '. | length')
-      set -e
-      if [ "$count" = "$total" ]; then
-        special_echo "$dc members alive"
-        break
-      fi
-      sleep 2
-    done
-    sleep 2
   done
-  special_echo "cluster is up"
+  special_echo "servers are up"
 }
+
 
 function aclBootstrap() {
   set +e
@@ -441,7 +446,9 @@ else
 
 	writeClusterJson $n $m
 	aclBootstrap
-	waitUntilClusterIsUp $n $m
+	waitUntilServersAreUp $n $m
+        execScript "$y" "afterServers"
+	waitUntilClientsAreUp $n $m
 
         execScript "$x" "after"
 fi
