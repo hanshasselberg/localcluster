@@ -11,9 +11,8 @@ token=$(secint mint -issuer auto-config-cluster -ttl 1h -node auto-config-client
 sed -i.bu "s/\"token\":.*/\"token\": \"$token\",/" examples/auto_config/client.json
 rm -rf examples/auto_config/client.json.bu
 
-IFS=$"\n"
-pub=$(cat dc1-server-consul-0.pem)
-sed -i.bu "s/\"jwt_validation_pub_keys\":.*/\"jwt_validation_pub_keys\": [\"$pub\"],/" examples/auto_config/server_dc1.json
-sed -i.bu "s/\"jwt_validation_pub_keys\":.*/\"jwt_validation_pub_keys\": [\"$pub\"],/" examples/auto_config/server_dc2.json
-rm -rf examples/auto_config/server_dc1.json.bu
-rm -rf examples/auto_config/server_dc2.json.bu
+export pub=$(cat dc1-server-consul-0.pem | perl -e 'while(<>) { $_ =~ s/[\r\n]/\\n/g; print "$_" }')
+cat examples/auto_config/server_dc1.json | perl -e 'while(<>) { $_ =~ s/"jwt_validation_pub_keys":.*/"jwt_validation_pub_keys": ["$ENV{pub}"],/; print "$_" }' > examples/auto_config/server_dc1.json.bu
+cat examples/auto_config/server_dc2.json | perl -e 'while(<>) { $_ =~ s/"jwt_validation_pub_keys":.*/"jwt_validation_pub_keys": ["$ENV{pub}"],/; print "$_" }' > examples/auto_config/server_dc2.json.bu
+mv examples/auto_config/server_dc1.json{.bu,}
+mv examples/auto_config/server_dc2.json{.bu,}
