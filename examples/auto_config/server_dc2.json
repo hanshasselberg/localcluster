@@ -5,11 +5,12 @@
 	"verify_outgoing": true,
 	"verify_incoming": true,
 	"verify_server_hostname": true,
+	"primary_datacenter": "dc1",
 	"auto_config": {
 		"authorization": {
 			"enabled": true,
 			"static": {
-				"jwt_validation_pub_keys": [ "" ],
+				"jwt_validation_pub_keys": ["-----BEGIN CERTIFICATE-----\nMIICnTCCAkOgAwIBAgIRAPYcE7DPWt/MMXryl+/x+LMwCgYIKoZIzj0EAwIwgbkx\nCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNU2FuIEZyYW5jaXNj\nbzEaMBgGA1UECRMRMTAxIFNlY29uZCBTdHJlZXQxDjAMBgNVBBETBTk0MTA1MRcw\nFQYDVQQKEw5IYXNoaUNvcnAgSW5jLjFAMD4GA1UEAxM3Q29uc3VsIEFnZW50IENB\nIDMyNjI5ODYwODgyODUzNzMwNDQ0MDM5OTU0NTE5NzA5Njg0OTYxODAeFw0yMDA3\nMzExMTQyNDhaFw0yMTA3MzExMTQyNDhaMBwxGjAYBgNVBAMTEXNlcnZlci5kYzEu\nY29uc3VsMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAENC8x4lIo9PDcSRT4KLFj\nMXgK0/mrIBRLAHM14V5NXtuIMGrLZkQfI6RjWoL9WTQGcVkj6noWESDsMlhprHnW\nnqOBxzCBxDAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsG\nAQUFBwMCMAwGA1UdEwEB/wQCMAAwKQYDVR0OBCIEIENhXOZb/zC0yKZaGi9nETt9\nqbJyD2Qb3IOs+EL7odjYMCsGA1UdIwQkMCKAIA4Uso0SoWfZ+3kl+Xl0JdmyAXxT\nP47QRd0GL956TNl7MC0GA1UdEQQmMCSCEXNlcnZlci5kYzEuY29uc3Vsgglsb2Nh\nbGhvc3SHBH8AAAEwCgYIKoZIzj0EAwIDSAAwRQIhAKil5luDwWsf24s6ZehXhOlj\n9EvwKUJVdudSDzWpMe+5AiAbK26BcVj9QnSMMFItzhY81jt+E1fYj4lPqcGOGN5w\nAg==\n-----END CERTIFICATE-----\n"],
 				"bound_issuer": "auto-config-cluster",
 				"claim_mappings": {
 					"sub": "node"
