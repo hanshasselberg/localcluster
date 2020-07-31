@@ -1,0 +1,23 @@
+{
+	"ca_file": "./consul-agent-ca.pem",
+	"cert_file": "./dc1-server-consul-0.pem",
+	"key_file": "./dc1-server-consul-0-key.pem",
+	"verify_outgoing": true,
+	"verify_incoming": true,
+	"verify_server_hostname": true,
+	"auto_config": {
+		"authorization": {
+			"enabled": true,
+			"static": {
+				"jwt_validation_pub_keys": [ "" ],
+				"bound_issuer": "auto-config-cluster",
+				"claim_mappings": {
+					"sub": "node"
+				},
+				"claim_assertions": [
+					"value.node == \"${node}\""
+				]
+			}
+		}
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"ca_file": "./consul-agent-ca.pem",
+	"verify_outgoing": true,
+	"verify_incoming": false,
+	"verify_server_hostname": true,
+	"ports": {"https":8501},
+	"auto_config": {
+		"enabled" : true,
+		"server_addresses": ["127.0.0.1"],
+		"token": "aosuth"
+	}
+}
