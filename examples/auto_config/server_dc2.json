@@ -1,4 +1,5 @@
 {
+	"encrypt": "qOEWPVBOhEYse6pWsA2jaSzi6FRwNC9CPf0B49hZ1G4=",
 	"ca_file": "./consul-agent-ca.pem",
 	"cert_file": "./dc2-server-consul-0.pem",
 	"key_file": "./dc2-server-consul-0-key.pem",
@@ -6,18 +7,18 @@
 	"verify_incoming": true,
 	"verify_server_hostname": true,
 	"primary_datacenter": "dc1",
+	"connect": { "enabled": true },
 	"auto_config": {
 		"authorization": {
 			"enabled": true,
 			"static": {
-				"jwt_validation_pub_keys": ["-----BEGIN CERTIFICATE-----\nMIICnTCCAkOgAwIBAgIRAPYcE7DPWt/MMXryl+/x+LMwCgYIKoZIzj0EAwIwgbkx\nCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNU2FuIEZyYW5jaXNj\nbzEaMBgGA1UECRMRMTAxIFNlY29uZCBTdHJlZXQxDjAMBgNVBBETBTk0MTA1MRcw\nFQYDVQQKEw5IYXNoaUNvcnAgSW5jLjFAMD4GA1UEAxM3Q29uc3VsIEFnZW50IENB\nIDMyNjI5ODYwODgyODUzNzMwNDQ0MDM5OTU0NTE5NzA5Njg0OTYxODAeFw0yMDA3\nMzExMTQyNDhaFw0yMTA3MzExMTQyNDhaMBwxGjAYBgNVBAMTEXNlcnZlci5kYzEu\nY29uc3VsMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAENC8x4lIo9PDcSRT4KLFj\nMXgK0/mrIBRLAHM14V5NXtuIMGrLZkQfI6RjWoL9WTQGcVkj6noWESDsMlhprHnW\nnqOBxzCBxDAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsG\nAQUFBwMCMAwGA1UdEwEB/wQCMAAwKQYDVR0OBCIEIENhXOZb/zC0yKZaGi9nETt9\nqbJyD2Qb3IOs+EL7odjYMCsGA1UdIwQkMCKAIA4Uso0SoWfZ+3kl+Xl0JdmyAXxT\nP47QRd0GL956TNl7MC0GA1UdEQQmMCSCEXNlcnZlci5kYzEuY29uc3Vsgglsb2Nh\nbGhvc3SHBH8AAAEwCgYIKoZIzj0EAwIDSAAwRQIhAKil5luDwWsf24s6ZehXhOlj\n9EvwKUJVdudSDzWpMe+5AiAbK26BcVj9QnSMMFItzhY81jt+E1fYj4lPqcGOGN5w\nAg==\n-----END CERTIFICATE-----\n"],
+				"jwt_validation_pub_keys": ["-----BEGIN CERTIFICATE-----\nMIICnTCCAkOgAwIBAgIRAOLFzURNh8utQv/Ku+XDc8cwCgYIKoZIzj0EAwIwgbkx\nCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNU2FuIEZyYW5jaXNj\nbzEaMBgGA1UECRMRMTAxIFNlY29uZCBTdHJlZXQxDjAMBgNVBBETBTk0MTA1MRcw\nFQYDVQQKEw5IYXNoaUNvcnAgSW5jLjFAMD4GA1UEAxM3Q29uc3VsIEFnZW50IENB\nIDMwMDU3MzU5ODcxMTE3Njg2Njg2NTU5NDU5NDE0ODAzNTkwNjM2NjAeFw0yMDA3\nMzExMzM4MTdaFw0yMTA3MzExMzM4MTdaMBwxGjAYBgNVBAMTEXNlcnZlci5kYzEu\nY29uc3VsMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZWmsRh6OkmFKgaYVZqkx\na219v1DhMV1Js8leLinrhmQAT4PFI7C30PAeUKYPb8Cjr/Xtt+M3OuTkvAGDc6ar\nAqOBxzCBxDAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsG\nAQUFBwMCMAwGA1UdEwEB/wQCMAAwKQYDVR0OBCIEICVfxLEdPTCdE+IxiWzH+B9g\nu9UY9VCUey3e5+bkGoIvMCsGA1UdIwQkMCKAIAIzGMES2+z+o6AURWq8aBiODwRM\nsbAZetb8cIhtL/aMMC0GA1UdEQQmMCSCEXNlcnZlci5kYzEuY29uc3Vsgglsb2Nh\nbGhvc3SHBH8AAAEwCgYIKoZIzj0EAwIDSAAwRQIgdN4y9cpGka22+58x+jsN3AHj\nVm08IJDn/De+xx1OOWICIQDgaYy6agk2bqVfqK8shlfuJgMUQ6x7Uwo+tV51JHH8\nig==\n-----END CERTIFICATE-----\n"],
 				"bound_issuer": "auto-config-cluster",
+				"bound_audiences": ["audience"],
 				"claim_mappings": {
 					"sub": "node"
 				},
-				"claim_assertions": [
-					"value.node == \"${node}\""
-				]
+				"claim_assertions": []
 			}
 		}
 	}

@@ -5,7 +5,7 @@ consul tls ca create
 consul tls cert create -dc dc1 -server
 consul tls cert create -dc dc2 -server
 
-token=$(secint mint -issuer auto-config-cluster -ttl 1h -node auto-config-client -priv-key dc1-server-consul-0-key.pem)
+token=$(secint mint -issuer auto-config-cluster -ttl 1h -node c1 -priv-key dc1-server-consul-0-key.pem -audience audience)
 
 # inject token into consul connect ca config
 sed -i.bu "s/\"intro_token\":.*/\"intro_token\": \"$token\"/" examples/auto_config/client.json

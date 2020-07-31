@@ -7,6 +7,6 @@
 	"auto_config": {
 		"enabled" : true,
 		"server_addresses": ["127.0.0.1"],
-		"intro_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiIl0sImV4cCI6MTU5NjE5OTM2OSwiaXNzIjoiYXV0by1jb25maWctY2x1c3RlciIsImp0aSI6Ijc1ODlhY2FkLTA3ZTctNjI5ZS03Njk2LTZlNWI5ZWI1ODJlYSIsIm5iZiI6MTU5NjE5NTcwOSwic3ViIjoiYXV0by1jb25maWctY2xpZW50In0.IzePlSzPIKpL9tdaUFOYMV_PPMtqvEu_XgrPDWHCK-usiVphBMmvbnZaBb9c9-xLnbHKXp-kXQoplAeg7uziwQ"
+		"intro_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiYXVkaWVuY2UiXSwiZXhwIjoxNTk2MjA2Mjk3LCJpc3MiOiJhdXRvLWNvbmZpZy1jbHVzdGVyIiwianRpIjoiZWI4MTUyMjgtMzFmMi1lZmVlLTEzNzEtZjk0MDI3ZDVjZGUyIiwibmJmIjoxNTk2MjAyNjM3LCJzdWIiOiJjMSJ9.t00O5YsPTTiWEPamb6tdW9iwiBYGQcxufcps5Wp7VSX2kJebmpcdLg3iwHHo0PnlAZD9I1fsKoQ_mjVGWuazhg"
 	}
 }
