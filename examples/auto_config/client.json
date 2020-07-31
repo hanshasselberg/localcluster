@@ -7,6 +7,6 @@
 	"auto_config": {
 		"enabled" : true,
 		"server_addresses": ["127.0.0.1"],
-		"intro_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiYXVkaWVuY2UiXSwiZXhwIjoxNTk2MjA2Mjk3LCJpc3MiOiJhdXRvLWNvbmZpZy1jbHVzdGVyIiwianRpIjoiZWI4MTUyMjgtMzFmMi1lZmVlLTEzNzEtZjk0MDI3ZDVjZGUyIiwibmJmIjoxNTk2MjAyNjM3LCJzdWIiOiJjMSJ9.t00O5YsPTTiWEPamb6tdW9iwiBYGQcxufcps5Wp7VSX2kJebmpcdLg3iwHHo0PnlAZD9I1fsKoQ_mjVGWuazhg"
+		"intro_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiYXVkaWVuY2UiXSwiZXhwIjoxNTk2MjA2NjY0LCJpc3MiOiJhdXRvLWNvbmZpZy1jbHVzdGVyIiwianRpIjoiNWY5Y2VjNWMtNTU5Yy0yMzA1LTRjYzktNzQzOGMzMGFmMmRlIiwibmJmIjoxNTk2MjAzMDA0LCJzdWIiOiJjMSJ9.RiSvAqgHoyf38jH1Quv2_-6a2yRNVPykLPqXvDI-RH4WdATc0XDo5iC_mOgPZIxBooSgTRSySLa_jnfcxK9ENw"
 	}
 }
