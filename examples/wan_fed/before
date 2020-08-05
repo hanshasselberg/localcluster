@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+rm *.pem
+consul tls ca create
+
+for dc in dc1 dc2; do # 2 dcs configured
+	for s in 1 2 3; do # 3 servers by default
+		consul tls cert create -dc $dc -node "s$s" -server 
+		i=$(expr $s - 1)
+		cp examples/wan_fed/server_template.json examples/wan_fed/server_${dc}_s${s}.json
+		cert="$dc-server-consul-$i"
+		fileName="examples/wan_fed/server_${dc}_s${s}.json"
+		sed -i.bu "s/\"cert_file\":.*/\"cert_file\": \".\/${cert}.pem\",/" $fileName
+		sed -i.ba "s/\"key_file\":.*/\"key_file\": \".\/${cert}-key.pem\",/" $fileName
+	done
+done
+rm -rf examples/wan_fed/*.bu
+rm -rf examples/wan_fed/*.ba
