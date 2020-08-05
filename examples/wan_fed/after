@@ -1,18 +1,13 @@
-!/usr/bin/env bash
+#!/usr/bin/env bash
 
-consul connect envoy -mesh-gateway -register \
-                     -service "gateway-primary" \
-                     -address 127.0.0.1:18101 \
-                     -wan-address 127.0.0.1:18101 \
-                     -admin-bind 127.0.0.1:19005 \
-		     -expose-servers &
+portdc1=$(jq -r '.servers."s1.dc1".grpc_port' cluster.json)
+portdc2=$(jq -r '.servers."s1.dc2".grpc_port' cluster.json)
 
-consul connect envoy -mesh-gateway -register \
-                     -service "gateway-secondary" \
-                     -address 127.0.0.1:18102 \
-                     -wan-address 127.0.0.1:18102 \
-                     -admin-bind 127.0.0.1:19006 \
-		     -expose-servers \
-		     -http-addr="http://localhost:8501" &
+# echo $portdc1
+# echo $portdc2
+
+consul connect envoy -mesh-gateway -register -service "gateway-primary" -address 127.0.0.1:18101 -wan-address 127.0.0.1:18101 -admin-bind 127.0.0.1:19005 -ca-file ./consul-agent-ca.pem -client-cert ./dc1-client-consul-0.pem -client-key ./dc1-client-consul-0-key.pem -grpc-addr "https://localhost:$portdc1" -expose-servers &
+
+consul connect envoy -mesh-gateway -register -service "gateway-secondary" -address 127.0.0.1:18102 -wan-address 127.0.0.1:18102 -admin-bind 127.0.0.1:19006 -ca-file ./consul-agent-ca.pem -client-cert ./dc2-client-consul-0.pem -client-key ./dc2-client-consul-0-key.pem -grpc-addr "https://localhost:$portdc2" -expose-servers -http-addr="http://localhost:8501" &
 
 consul config write examples/wan_fed/proxy-default.json
