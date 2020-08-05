@@ -1,0 +1,18 @@
+!/usr/bin/env bash
+
+consul connect envoy -mesh-gateway -register \
+                     -service "gateway-primary" \
+                     -address 127.0.0.1:18101 \
+                     -wan-address 127.0.0.1:18101 \
+                     -admin-bind 127.0.0.1:19005 \
+		     -expose-servers &
+
+consul connect envoy -mesh-gateway -register \
+                     -service "gateway-secondary" \
+                     -address 127.0.0.1:18102 \
+                     -wan-address 127.0.0.1:18102 \
+                     -admin-bind 127.0.0.1:19006 \
+		     -expose-servers \
+		     -http-addr="http://localhost:8501" &
+
+consul config write examples/wan_fed/proxy-default.json

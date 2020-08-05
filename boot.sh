@@ -447,6 +447,7 @@ else
 	waitUntilServersAreUp $n $m
         execScript "$y" "afterServers"
 	waitUntilClientsAreUp $n $m
+	special_echo "cluster is up"
 
         execScript "$x" "after"
 fi
