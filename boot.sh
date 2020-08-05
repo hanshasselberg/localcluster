@@ -294,14 +294,13 @@ function waitUntilClientsAreUp() {
       count=$(curl -H "X-Consul-Token: $(jq -r '.bootstrap_token' cluster.json)" -s "localhost:$port/v1/agent/members?dc=$dc" | jq '. | length')
       set -e
       if [ "$count" = "$total" ]; then
-        special_echo "$dc members alive"
+        special_echo "$dc clients are up"
         break
       fi
       sleep 2
     done
     sleep 2
   done
-  special_echo "clients are up"
 }
 
 function waitUntilServersAreUp() {
@@ -319,7 +318,6 @@ function waitUntilServersAreUp() {
       sleep 2
     done
   done
-  special_echo "servers are up"
 }
 
 
