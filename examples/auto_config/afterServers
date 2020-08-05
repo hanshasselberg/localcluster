@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+export CONSUL_HTTP_TOKEN=$(jq -r '.bootstrap_token' cluster.json)
+
+consul acl policy create -name replication -rules @examples/auto_config/replication-policy.hcl
+consul acl token create -description "replication token" -policy-name replication
+replication_token=$(consul acl token create -description "replication token" -policy-name replication | grep SecretID | awk '{print $2}')
+for addr in $(jq -r '.servers[]|select(.dc == "dc2" and .mode == "server").address' cluster.json); do
+	CONSUL_HTTP_ADDR=$addr consul acl set-agent-token replication "$replication_token"
+done
