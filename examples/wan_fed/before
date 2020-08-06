@@ -3,7 +3,7 @@
 rm *.pem
 consul tls ca create
 
-for dc in dc1 dc2; do # 2 dcs configured
+for dc in dc1 dc2 dc3; do # 3 dcs configured
 
 	# setup client certs for each dc
 	consul tls cert create -dc $dc -client
@@ -25,7 +25,7 @@ for dc in dc1 dc2; do # 2 dcs configured
 
 		# configure primary_datacenters only in secondaries
 		if [ "$dc" != "dc1" ]; then
-			sed -i.bu "s/\"primary_gateways\":.*/\"primary_gateways\": [\"localhost:18101\"],/" $fileName
+			sed -i.bu "s/\"primary_gateways\":.*/\"primary_gateways\": [\"localhost:18000\"],/" $fileName
 		fi
 	done
 done
