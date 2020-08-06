@@ -23,3 +23,5 @@ for dc in dc1 dc2 dc3; do
 done
 
 consul config write examples/wan_fed/proxy-default.json
+
+echo " ps -ef | grep boot.sh | grep bash | awk '{print $2}' | xargs kill -9; pkill -9 consul; pkill -9 envoy"

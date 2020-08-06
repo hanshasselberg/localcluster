@@ -1,4 +1,10 @@
+cluster.json
+dummy.json
+out.log
 dc*
+*.pem
 examples/checks/database
 examples/checks/counting
 examples/checks/dashboard
+examples/wan_fed/client_dc*.json
+examples/wan_fed/server_dc*.json
