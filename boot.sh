@@ -109,6 +109,7 @@ d=${d:-"1"}
 f=${f:-""}
 p=${p:-"dc"}
 v=${v:-""}
+w=${w:-""}
 x=${x:-""}
 y=${y:-""}
 z=${z:-""}
@@ -200,8 +201,8 @@ function addAgent() {
 }
 
 function retryJoinWanConfig(){
-	if [ -z $w ]; then
-		echo "retry_join_wan = [\"127.0.0.1:8701\"]"
+	if [ "$w" != "1" ]; then
+	      echo "retry_join_wan = [\"127.0.0.1:8701\"]"
 	fi
 }
 
@@ -308,7 +309,7 @@ function waitUntilServersAreUp() {
     local port=$(knownHttpPort $i)
     while true; do
       set +e
-      leader=$(curl -H "X-Consul-Token: $(jq -r '.bootstrap_token' cluster.json)" -s "localhost:$port/v1/agent/self" | jq -r '.Stats.consul.leader_addr')
+      leader=$(curl -s "localhost:$port/v1/status/leader")
       set -e
       if [ "$leader" != "" ]; then
         special_echo "$dc has leader"
@@ -321,25 +322,8 @@ function waitUntilServersAreUp() {
 
 
 function aclBootstrap() {
-  set +e
-  # dc1 is hardcoded here.
-  # TODO make dynamic
-  enabled=$(jq '.acl.enabled' $(serverConfig dc1 1))
-  if [ "$enabled" = "true" ]; then
-    while true; do
-      out=$(consul acl bootstrap)
-      res=$?
-      if [ $res -eq 0 ]; then
-        secret=$(echo $out | grep SecretID | awk '{print $4}')
-        special_echo "ACL bootstrap token: $secret"
-        jq ". + {bootstrap_token: \"$secret\"}" cluster.json > cluster_new.json
-        mv cluster_new.json cluster.json
-        break
-      fi
-      sleep 2
-    done
-  fi
-  set -e
+  jq ". + {bootstrap_token: \"e95b599e-166e-7d80-08ad-aee76e7ddf19\"}" cluster.json > cluster_new.json
+  mv cluster_new.json cluster.json
 }
 
 function writeClusterJson() {

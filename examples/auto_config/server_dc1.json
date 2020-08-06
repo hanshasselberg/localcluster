@@ -9,14 +9,18 @@
 	"acl": { 
 		"enabled": true,
 		"default_policy": "deny",
-		"enable_token_persistence": true
+		"enable_token_persistence": true,
+		"tokens": {
+			"master": "e95b599e-166e-7d80-08ad-aee76e7ddf19",
+			"agent": "e95b599e-166e-7d80-08ad-aee76e7ddf19"
+		}
 	},
 	"connect": { "enabled": true },
 	"auto_config": {
 		"authorization": {
 			"enabled": true,
 			"static": {
-				"jwt_validation_pub_keys": ["-----BEGIN CERTIFICATE-----\nMIICnDCCAkGgAwIBAgIQSUR/4a0azaOEz4qRtjAZpzAKBggqhkjOPQQDAjCBuDEL\nMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1TYW4gRnJhbmNpc2Nv\nMRowGAYDVQQJExExMDEgU2Vjb25kIFN0cmVldDEOMAwGA1UEERMFOTQxMDUxFzAV\nBgNVBAoTDkhhc2hpQ29ycCBJbmMuMT8wPQYDVQQDEzZDb25zdWwgQWdlbnQgQ0Eg\nMjgxNjQyNDc3Nzc2MjkzMTQ4OTU0OTE4MjAxMjg5NDAxMzExNzkwHhcNMjAwNzMx\nMjE0MTQ4WhcNMjEwNzMxMjE0MTQ4WjAcMRowGAYDVQQDExFzZXJ2ZXIuZGMxLmNv\nbnN1bDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABCppUPIXNLYSy088u/0Vp2bs\nxb1xo69fKG+sCpyDHV5/5834V77ABW43VzYSgpT6Z1m2rxIeMoCnzI/Mu55isXKj\ngccwgcQwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEF\nBQcDAjAMBgNVHRMBAf8EAjAAMCkGA1UdDgQiBCAnPlkjCbrtk1Lrsd3sfXhWj8AD\nNW9CkUGcABkPAJVhdDArBgNVHSMEJDAigCDOjpcEJ6AeIp7I7YcUiLcWwpn9QDt6\ngl5BIBdaSrKlxTAtBgNVHREEJjAkghFzZXJ2ZXIuZGMxLmNvbnN1bIIJbG9jYWxo\nb3N0hwR/AAABMAoGCCqGSM49BAMCA0kAMEYCIQDmTlsmo+JWBQlg9kKYv5nAMDI9\nJxOl6Ak9g4Sew1ZpdwIhAKYHJmYIQdgAuUT37GCeBsXi/g75TvbJfGPTIhvzVzVh\n-----END CERTIFICATE-----\n"],
+				"jwt_validation_pub_keys": ["-----BEGIN CERTIFICATE-----\nMIICmzCCAkKgAwIBAgIQLBTdiWbN/4Nagp2GfTf9tjAKBggqhkjOPQQDAjCBuTEL\nMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1TYW4gRnJhbmNpc2Nv\nMRowGAYDVQQJExExMDEgU2Vjb25kIFN0cmVldDEOMAwGA1UEERMFOTQxMDUxFzAV\nBgNVBAoTDkhhc2hpQ29ycCBJbmMuMUAwPgYDVQQDEzdDb25zdWwgQWdlbnQgQ0Eg\nMjg1MzQ2NTEzOTg5NTg5OTg0NzA3MzcwMDExOTc3NDg2MzU1NDMxMB4XDTIwMDgw\nNjE2MDkyMloXDTIxMDgwNjE2MDkyMlowHDEaMBgGA1UEAxMRc2VydmVyLmRjMS5j\nb25zdWwwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARis3Nsap4aL4hk5xgPrLj2\n1vYXBSOckP6HfjtZU2No6cfMN8rqddYrCTLdlfT+b1PrDyZcgSmm5dA/mMl3iq0K\no4HHMIHEMA4GA1UdDwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYB\nBQUHAwIwDAYDVR0TAQH/BAIwADApBgNVHQ4EIgQgLv8D0hLTZ0k05ZPMeN7tOOm0\nog/fY4LuJqxNGTMVLEkwKwYDVR0jBCQwIoAgZbRewy4dxLsCl4ouQF6x0BVN87/b\nmjOznkh449skY3IwLQYDVR0RBCYwJIIRc2VydmVyLmRjMS5jb25zdWyCCWxvY2Fs\naG9zdIcEfwAAATAKBggqhkjOPQQDAgNHADBEAiBYAycXNCF3i7Zzxkb055GDNrNu\n+NalHWWqZkgrf04ZaQIgSJoV7vHxdEOhJZee2AxrzYq+TdZOB3DXr052NPhI1fk=\n-----END CERTIFICATE-----\n"],
 				"bound_issuer": "auto-config-cluster",
 				"bound_audiences": ["audience"],
 				"claim_mappings": {
