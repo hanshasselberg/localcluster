@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+rm *.pem *.csr 
+rm certs.db crt.srl serial
+touch certs.db
+echo 09 > crt.srl
+consul tls ca create
+
+# openssl genrsa -out consul-agent-intermediate-key.pem 2048
+openssl ecparam -name prime256v1 -genkey -noout -out consul-agent-intermediate-key.pem
+openssl req -config examples/auto_encrypt_custom_ca/openssl.conf -sha256 -new \
+	-key consul-agent-intermediate-key.pem \
+	-out intermediate.csr -subj '/CN=Interm.'
+openssl ca -batch -config examples/auto_encrypt_custom_ca/openssl.conf \
+	-keyfile consul-agent-ca-key.pem \
+	-cert consul-agent-ca.pem -extensions v3_req -notext -md sha256 -in intermediate.csr \
+	-out consul-agent-intermediate.pem
+rm certs.* crt.srl* serial
+
+mkdir examples/auto_encrypt_custom_ca/ca_path
+cp consul-agent-ca.pem consul-agent-intermediate.pem examples/auto_encrypt_custom_ca/ca_path
+
+for dc in dc1 dc2; do # 2 dcs configured
+	consul tls cert create -dc $dc -server -ca ./consul-agent-intermediate.pem -key ./consul-agent-intermediate-key.pem
+
+	cp examples/auto_encrypt_custom_ca/{server_template,server_$dc}.json
+	cert="$dc-server-consul-0"
+	fileName="examples/auto_encrypt_custom_ca/server_${dc}.json"
+	sed -i.bu "s/\"cert_file\":.*/\"cert_file\": \".\/${cert}.pem\",/" $fileName
+	sed -i.bu "s/\"key_file\":.*/\"key_file\": \".\/${cert}-key.pem\",/" $fileName
+	export pub=$(cat consul-agent-intermediate.pem | perl -e 'while(<>) { $_ =~ s/[\r\n]/\\n/g; print "$_" }')
+	cat examples/auto_encrypt_custom_ca/server_$dc.json | perl -e 'while(<>) { $_ =~ s/"root_cert":.*/"root_cert": "$ENV{pub}",/; print "$_" }' > examples/auto_encrypt_custom_ca/server_$dc.json.new
+	mv examples/auto_encrypt_custom_ca/server_$dc.json{.new,}
+	
+	export key=$(cat consul-agent-intermediate-key.pem | perl -e 'while(<>) { $_ =~ s/[\r\n]/\\n/g; print "$_" }')
+	cat examples/auto_encrypt_custom_ca/server_$dc.json | perl -e 'while(<>) { $_ =~ s/"private_key":.*/"private_key": "$ENV{key}"/; print "$_" }' > examples/auto_encrypt_custom_ca/server_$dc.json.new
+	mv examples/auto_encrypt_custom_ca/server_$dc.json{.new,}
+done
+rm -rf examples/auto_encrypt_custom_ca/*.bu

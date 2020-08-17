@@ -1,0 +1,20 @@
+{
+	"ca_path": "./examples/auto_encrypt_custom_ca/ca_path",
+	"cert_file": "",
+	"key_file": "",
+	"verify_outgoing": true,
+	"verify_incoming": true,
+	"verify_server_hostname": true,
+	"primary_datacenter": "dc1",
+	"connect": {
+		"enabled": true,
+		"ca_provider": "consul",
+		"ca_config": {
+			"root_cert": "",
+			"private_key": ""
+		}
+	},
+	"auto_encrypt": {
+		"allow_tls": true
+	}
+}

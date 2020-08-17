@@ -1,0 +1,20 @@
+{
+	"ca_path": "./examples/auto_encrypt_custom_ca/ca_path",
+	"cert_file": "./dc1-server-consul-0.pem",
+	"key_file": "./dc1-server-consul-0-key.pem",
+	"verify_outgoing": true,
+	"verify_incoming": true,
+	"verify_server_hostname": true,
+	"primary_datacenter": "dc1",
+	"connect": {
+		"enabled": true,
+		"ca_provider": "consul",
+		"ca_config": {
+			"root_cert": "-----BEGIN CERTIFICATE-----\nMIIByjCCAXCgAwIBAgIBCTAKBggqhkjOPQQDAjCBuDELMAkGA1UEBhMCVVMxCzAJ\nBgNVBAgTAkNBMRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMRowGAYDVQQJExExMDEg\nU2Vjb25kIFN0cmVldDEOMAwGA1UEERMFOTQxMDUxFzAVBgNVBAoTDkhhc2hpQ29y\ncCBJbmMuMT8wPQYDVQQDEzZDb25zdWwgQWdlbnQgQ0EgMjk3Mjg0MzU5ODMyNjQx\nODUyOTI1OTQ4NjA5NzU3MDM0NzMxMTMwHhcNMjAwODE3MTIzOTMyWhcNMjEwODE3\nMTIzOTMyWjASMRAwDgYDVQQDDAdJbnRlcm0uMFkwEwYHKoZIzj0CAQYIKoZIzj0D\nAQcDQgAE90zJNTB9dUlx3tcxOGb2ADw11rov8LCbRmUZNjYyWDuTW0UXkfeZZfX5\n0R2mSK9aRNcp3DgVF0Bt3EHGtEcJrKMQMA4wDAYDVR0TBAUwAwEB/zAKBggqhkjO\nPQQDAgNIADBFAiEAsm1aTSMtUpIXjQ6c823CkVh6pirS1MnTXwReI4TuwjACIBhq\nOayGFcDpxhBFqfYIuVrDxZ5TGk0Ng4uOtlIKkGzU\n-----END CERTIFICATE-----\n",
+			"private_key": "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIMGzlwcDVGuwBH/fywhBVBWn07kHSIkhcWTeCcH3aLdeoAoGCCqGSM49\nAwEHoUQDQgAE90zJNTB9dUlx3tcxOGb2ADw11rov8LCbRmUZNjYyWDuTW0UXkfeZ\nZfX50R2mSK9aRNcp3DgVF0Bt3EHGtEcJrA==\n-----END EC PRIVATE KEY-----\n"
+		}
+	},
+	"auto_encrypt": {
+		"allow_tls": true
+	}
+}

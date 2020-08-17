@@ -1,0 +1,8 @@
+{
+	"ca_path": "./examples/auto_encrypt_custom_ca/ca_path",
+	"verify_outgoing": true,
+	"verify_incoming": false,
+	"verify_server_hostname": true,
+	"ports": {"https":8501},
+	"auto_encrypt": {"tls": true}
+}

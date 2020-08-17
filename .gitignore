@@ -3,6 +3,7 @@ dummy.json
 out.log
 dc*
 *.pem
+*.csr
 examples/checks/database
 examples/checks/counting
 examples/checks/dashboard
