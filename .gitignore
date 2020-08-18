@@ -10,3 +10,4 @@ examples/checks/dashboard
 examples/wan_fed/client_dc*.json
 examples/wan_fed/server_dc*.json
 examples/auto_config/client_dc*.json
+examples/auto_encrypt_custom_ca/server_dc*

@@ -4,9 +4,11 @@ rm *.pem *.csr
 rm certs.db crt.srl serial
 touch certs.db
 echo 09 > crt.srl
+
+# create root CA
 consul tls ca create
 
-# openssl genrsa -out consul-agent-intermediate-key.pem 2048
+# create intermediate CA
 openssl ecparam -name prime256v1 -genkey -noout -out consul-agent-intermediate-key.pem
 openssl req -config examples/auto_encrypt_custom_ca/openssl.conf -sha256 -new \
 	-key consul-agent-intermediate-key.pem \
@@ -15,11 +17,12 @@ openssl ca -batch -config examples/auto_encrypt_custom_ca/openssl.conf \
 	-keyfile consul-agent-ca-key.pem \
 	-cert consul-agent-ca.pem -extensions v3_req -notext -md sha256 -in intermediate.csr \
 	-out consul-agent-intermediate.pem
-rm certs.* crt.srl* serial
 
 mkdir examples/auto_encrypt_custom_ca/ca_path
 cp consul-agent-ca.pem consul-agent-intermediate.pem examples/auto_encrypt_custom_ca/ca_path
 
+# generate server certs from intermediate
+# generate server config
 for dc in dc1 dc2; do # 2 dcs configured
 	consul tls cert create -dc $dc -server -ca ./consul-agent-intermediate.pem -key ./consul-agent-intermediate-key.pem
 
@@ -36,4 +39,5 @@ for dc in dc1 dc2; do # 2 dcs configured
 	cat examples/auto_encrypt_custom_ca/server_$dc.json | perl -e 'while(<>) { $_ =~ s/"private_key":.*/"private_key": "$ENV{key}"/; print "$_" }' > examples/auto_encrypt_custom_ca/server_$dc.json.new
 	mv examples/auto_encrypt_custom_ca/server_$dc.json{.new,}
 done
-rm -rf examples/auto_encrypt_custom_ca/*.bu
+
+rm -rf examples/auto_encrypt_custom_ca/*.bu certs.* crt.srl* serial
