@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-# start more servers hopefully non-voters
-./boot.sh -e examples/redundancy_zones/ -y "1;4" &
-./boot.sh -e examples/redundancy_zones/ -y "1;5" &
-./boot.sh -e examples/redundancy_zones/ -y "1;6" &
-sleep 10
-# kill a voter from zone C
-pkill -9 -f dc1-s3
