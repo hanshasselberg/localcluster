@@ -271,11 +271,7 @@ function startServer() {
 
 function startClient() {
   local dc="$p$1"
-  if [ "$2" = "1" ]; then
-	  local id="api-server-56679f766-9jgwl"
-  else
-	  local id="c$2"
-  fi
+  local id="c$2"
   local data="$dc-$id"
   local knownServer=$(knownServerPort $1)
   local serf=$(freePort)
