@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+rm *.pem
+consul tls ca create -days 0
+consul tls cert create -dc dc1 -server

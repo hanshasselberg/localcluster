@@ -201,7 +201,7 @@ function addLine() {
 }
 
 function addAgent() {
-	addLine "\"$2.$1\": {\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": $3, \"https_port\": $4, \"server_port\": $5, \"grpc_port\": $6, \"mode\": \"$7\", \"address\": \"localhost:$3\"},"
+	addLine "\"$2.$1\": {\"dc\": \"$1\", \"id\": \"$2\", \"http_port\": $3, \"https_port\": $4, \"server_port\": $5, \"grpc_tls\": $6, \"mode\": \"$7\", \"address\": \"localhost:$3\"},"
 }
 
 function retryJoinWanConfig(){
@@ -246,7 +246,7 @@ function startWellKnownServer() {
 	rm -rf "$data"
 	special_echo "$dc well known server HTTP: 127.0.0.1:$http"
 	set -o xtrace
-	consul agent -ui -http-port "$http" -grpc-port $grpc -server -bootstrap-expect $q -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
+	consul agent -ui -http-port "$http" -grpc-tls-port $grpc -server -bootstrap-expect $q -data-dir "$data" -bind 127.0.0.1 -node $id -serf-lan-port "$serf" -serf-wan-port "$wan" -dns-port "$dns" -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
 }
 
 function startServer() {
@@ -266,7 +266,7 @@ function startServer() {
   rm -rf "$data"
 
   set -o xtrace
-  consul agent -ui -http-port $http -grpc-port $grpc -server -bootstrap-expect $q -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
+  consul agent -ui -http-port $http -grpc-tls-port $grpc -server -bootstrap-expect $q -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port $(freePort) -dns-port $(freePort) -server-port $server -log-level $l -config-file $config -datacenter $dc -domain $c -hcl "$hcl"
 }
 
 function startClient() {
@@ -284,7 +284,7 @@ function startClient() {
   rm -rf "$data"
   set -o xtrace
 
-  consul agent -ui -http-port $http -grpc-port $(freePort) -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port -1 -dns-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer -hcl "$hcl"
+  consul agent -ui -http-port $http -grpc-tls-port $(freePort) -retry-join "127.0.0.1:$join" -data-dir "$data" -bind 127.0.0.1 -node "$id" -serf-lan-port $(freePort) -serf-wan-port -1 -dns-port $(freePort) -log-level $l -config-file $config -datacenter $dc -domain $c -server-port $knownServer -hcl "$hcl"
 }
 
 function waitUntilClientsAreUp() {
